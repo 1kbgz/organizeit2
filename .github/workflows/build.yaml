@@ -53,10 +53,6 @@ jobs:
 
     - name: Test
       run: make coverage
-      env:
-        FSSPEC_S3_ENDPOINT_URL: '${{secrets.FSSPEC_S3_ENDPOINT_URL}}'
-        FSSPEC_S3_KEY: '${{secrets.FSSPEC_S3_KEY}}'
-        FSSPEC_S3_SECRET: '${{secrets.FSSPEC_S3_SECRET}}'
 
     - name: Upload test results (Python)
       uses: actions/upload-artifact@v4

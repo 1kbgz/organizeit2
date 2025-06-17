@@ -1,6 +1,8 @@
 # organizeit2
 
-[![Build Status](https://github.com/1kbgz/organizeit2/actions/workflows/build.yml/badge.svg?branch=main&event=push)](https://github.com/1kbgz/organizeit2/actions/workflows/build.yml)
+Engage with Zorp!
+
+[![Build Status](https://github.com/1kbgz/organizeit2/actions/workflows/build.yaml/badge.svg?branch=main&event=push)](https://github.com/1kbgz/organizeit2/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/gh/1kbgz/organizeit2/branch/main/graph/badge.svg)](https://codecov.io/gh/1kbgz/organizeit2)
 [![License](https://img.shields.io/github/license/1kbgz/organizeit2)](https://github.com/1kbgz/organizeit2)
 [![PyPI](https://img.shields.io/pypi/v/organizeit2.svg)](https://pypi.python.org/pypi/organizeit2)
