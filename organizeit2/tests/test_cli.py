@@ -67,7 +67,7 @@ def test_rematch_limit_leaves(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            rematch(directory_str, ".*", list=False, limit=2, leaves=7, invert=True)
+            rematch(directory_str, ".*", list=False, limit=2, leaves=7, invert=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 2

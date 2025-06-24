@@ -52,6 +52,9 @@ def match(
             intersection = sorted(intersection, key=lambda x: x.modified(), reverse=desc)
         elif by == "size":
             intersection = sorted(intersection, key=lambda x: x.size(block_size), reverse=desc)
+        elif by is None:
+            # Don't do anything
+            pass
         else:
             raise NotImplementedError()
 
