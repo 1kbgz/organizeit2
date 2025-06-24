@@ -172,7 +172,11 @@ class Directory(SharedAPI, BaseModel):
     def size(self, block_size: int = 4096) -> int:
         size = 0
         for elem in self.ls():
-            size += elem.size(block_size=block_size)
+            try:
+                size += elem.size(block_size=block_size)
+            except FileNotFoundError:
+                # File removed or bad symlink, ignore
+                continue
         return size
 
     def apply(self, foo, include_dir: bool = False, recursive: bool = False): ...
