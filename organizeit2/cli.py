@@ -8,14 +8,21 @@ from organizeit2 import Directory
 _list = list
 
 
-def _unmatched_table(unmatch):
+def _unmatched_table(unmatch, size: bool = False, modified: bool = False):
     if unmatch:
         table = Table(title="Unmatched")
         table.add_column("Path", style="cyan")
-        table.add_column("Size", style="cyan")
-        table.add_column("Modified", style="cyan")
+        if size:
+            table.add_column("Size", style="cyan")
+        if modified:
+            table.add_column("Modified", style="cyan")
         for _ in unmatch:
-            table.add_row(str(_), str(_.size(0)), _.modified().isoformat())
+            row = [str(_)]
+            if size:
+                row.append(str(_.size(0)))
+            if modified:
+                row.append(_.modified().isoformat())
+            table.add_row(*row)
         console = Console()
         console.print(table)
     else:
@@ -29,6 +36,8 @@ def match(
     list: Annotated[bool, Option("--list/--no-list", "-l/-L")] = False,
     name_only: Annotated[bool, Option("--name-only/--no-name-only", "-n/-N")] = True,
     invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
+    size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
+    modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
     limit: Annotated[int, Option("--limit")] = None,
     leaves: Annotated[int, Option("--leaves")] = None,
     by: Annotated[str, Option("--by")] = None,
@@ -67,7 +76,7 @@ def match(
         for _ in intersection:
             print(_.as_posix())
     else:
-        _unmatched_table(intersection)
+        _unmatched_table(intersection, size=size or by == "size", modified=modified or by == "modified")
     raise Exit(min(len(intersection), 1))
 
 
@@ -78,6 +87,8 @@ def rematch(
     list: Annotated[bool, Option("--list/--no-list", "-l/-L")] = False,
     name_only: Annotated[bool, Option("--name-only/--no-name-only", "-n/-N")] = True,
     invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
+    size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
+    modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
     limit: Annotated[int, Option("--limit")] = None,
     leaves: Annotated[int, Option("--leaves")] = None,
     by: Annotated[str, Option("--by")] = None,
@@ -118,7 +129,7 @@ def rematch(
         for _ in intersection:
             print(_.as_posix())
     else:
-        _unmatched_table(intersection)
+        _unmatched_table(intersection, size=size or by == "size", modified=modified or by == "modified")
     raise Exit(return_code)
 
 
