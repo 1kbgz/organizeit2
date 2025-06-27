@@ -55,7 +55,7 @@ def test_match_limit_leaves(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            match(directory_str, "*", list=False, limit=2, leaves=7, invert=True)
+            match(directory_str, "*", list=False, limit=2, leaves=7, invert=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 2
@@ -109,7 +109,7 @@ def test_match_limit_leaves_desc(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            match(directory_str, "*", list=False, limit=2, leaves=7, invert=True, desc=True)
+            match(directory_str, "*", list=False, limit=2, leaves=7, invert=True, desc=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 2
@@ -121,7 +121,7 @@ def test_rematch_limit_leaves_desc(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            rematch(directory_str, ".*", list=False, limit=2, leaves=7, invert=True, desc=True)
+            rematch(directory_str, ".*", list=False, limit=2, leaves=7, invert=True, desc=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 2
@@ -133,7 +133,7 @@ def test_match_limit(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            match(directory_str, "*", list=False, limit=3, invert=True)
+            match(directory_str, "*", list=False, limit=3, invert=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 3
@@ -146,7 +146,7 @@ def test_rematch_limit(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            rematch(directory_str, ".*", list=False, limit=3, invert=True)
+            rematch(directory_str, ".*", list=False, limit=3, invert=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 3
@@ -159,7 +159,7 @@ def test_match_leaves(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            match(directory_str, "*", list=False, leaves=8, invert=True)
+            match(directory_str, "*", list=False, leaves=8, invert=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 2
@@ -171,7 +171,7 @@ def test_rematch_leaves(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli._unmatched_table") as table_mock:
         try:
-            rematch(directory_str, ".*", list=False, leaves=8, invert=True)
+            rematch(directory_str, ".*", list=False, leaves=8, invert=True, by="age")
         except Exit:
             pass
         assert len(table_mock.call_args_list[0][0][0]) == 2

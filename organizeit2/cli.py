@@ -31,7 +31,7 @@ def match(
     invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
     limit: Annotated[int, Option("--limit")] = None,
     leaves: Annotated[int, Option("--leaves")] = None,
-    by: Annotated[str, Option("--by")] = "age",
+    by: Annotated[str, Option("--by")] = None,
     desc: Annotated[bool, Option("--desc")] = False,
     block_size: Annotated[int, Option("--block-size")] = 0,
 ) -> bool:
@@ -80,7 +80,7 @@ def rematch(
     invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
     limit: Annotated[int, Option("--limit")] = None,
     leaves: Annotated[int, Option("--leaves")] = None,
-    by: Annotated[str, Option("--by")] = "age",
+    by: Annotated[str, Option("--by")] = None,
     desc: Annotated[bool, Option("--desc")] = False,
     block_size: Annotated[int, Option("--block-size")] = 0,
 ) -> bool:
@@ -101,6 +101,9 @@ def rematch(
             intersection = sorted(intersection, key=lambda x: x.modified(), reverse=desc)
         elif by == "size":
             intersection = sorted(intersection, key=lambda x: x.size(block_size), reverse=desc)
+        elif by is None:
+            # Don't do anything
+            pass
         else:
             raise NotImplementedError()
 
