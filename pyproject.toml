@@ -8,7 +8,7 @@ authors = [{name = "the organizeit2 authors", email = "t.paine154@gmail.com"}]
 description = "Engage with Zorp!"
 readme = "README.md"
 license = { text = "Apache-2.0" }
-version = "0.7.1"
+version = "0.7.2"
 requires-python = ">=3.9"
 keywords = [
     "pydantic",
@@ -64,7 +64,7 @@ Repository = "https://github.com/1kbgz/organizeit2"
 Homepage = "https://github.com/1kbgz/organizeit2"
 
 [tool.bumpversion]
-current_version = "0.7.1"
+current_version = "0.7.2"
 commit = true
 tag = false
 
