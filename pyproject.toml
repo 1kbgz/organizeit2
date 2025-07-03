@@ -130,4 +130,8 @@ known-first-party = ["organizeit2"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.ruff.lint.per-file-ignores]
+<<<<<<< before updating
 "__init__.py" = ["F401", "F403"]
+=======
+"__init__.py" = ["F401", "F403"]
+>>>>>>> after updating
