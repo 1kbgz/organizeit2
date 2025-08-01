@@ -15,6 +15,7 @@ The name is because `organizeit` was [taken on pypi](https://pypi.org/project/or
 
 ## Overview
 
+<<<<<<< before updating
 `OrganizeIt2` has the following models and types:
 
 - `FileSystem`: `pydantic` wrapper of an `fsspec` `AbstractFileSystem`
@@ -25,5 +26,7 @@ The name is because `organizeit` was [taken on pypi](https://pypi.org/project/or
 - `Directory`: `pydantic` model representing an `fsspec` directory
 - `File`: `pydantic` model representing an `fsspec` file
 
+=======
+>>>>>>> after updating
 > [!NOTE]
 > This library was generated using [copier](https://copier.readthedocs.io/en/stable/) from the [Base Python Project Template repository](https://github.com/python-project-templates/base).
