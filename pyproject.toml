@@ -69,12 +69,8 @@ Homepage = "https://github.com/1kbgz/organizeit2"
 [tool.bumpversion]
 current_version = "0.7.2"
 commit = true
-<<<<<<< before updating
 tag = false
-=======
-tag = true
 commit_args = "-s"
->>>>>>> after updating
 
 [[tool.bumpversion.files]]
 filename = "organizeit2/__init__.py"
