@@ -42,7 +42,10 @@ develop = [
     "build",
     "bump-my-version",
     "check-manifest",
+    "codespell>=2.4,<2.5",
     "hatchling",
+    "mdformat>=0.7.22,<0.8",
+    "mdformat-tables>=1",
     "pytest",
     "pytest-cov",
     "ruff",
@@ -67,6 +70,7 @@ Homepage = "https://github.com/1kbgz/organizeit2"
 current_version = "0.7.2"
 commit = true
 tag = false
+commit_args = "-s"
 
 [[tool.bumpversion.files]]
 filename = "organizeit2/__init__.py"
