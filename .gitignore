@@ -139,10 +139,13 @@ js/dist
 js/lib
 js/node_modules
 js/*.tgz
+organizeit2/extension
 
 # Jupyter
 .ipynb_checkpoints
 .autoversion
+!organizeit2/extension/organizeit2.json
+!organizeit2/extension/install.json
 organizeit2/nbextension
 organizeit2/labextension
 
