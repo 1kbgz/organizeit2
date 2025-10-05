@@ -32,6 +32,7 @@ classifiers = [
 dependencies = [
     "ccflow",
     "fsspec",
+    "fsspec-pydantic",
 ]
 
 [project.optional-dependencies]

@@ -5,8 +5,7 @@ from re import match as re_match
 
 from ccflow import BaseModel
 from fsspec.implementations.local import LocalFileSystem
-
-from .fsspec_types import DirectoryPath, FilePath, Path as BasePath
+from fsspec_pydantic import DirectoryPath, FilePath, Path as BasePath
 
 __all__ = (
     "Directory",

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from ccflow import BaseModel
 from fsspec.implementations.local import LocalFileSystem
+from fsspec_pydantic import FileSystem
 from pydantic import Field
 
-from .fsspec_types import FileSystem
 from .types import Directory
 
 __all__ = ("OrganizeIt",)
