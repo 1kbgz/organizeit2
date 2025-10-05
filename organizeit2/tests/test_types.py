@@ -2,8 +2,9 @@ from pathlib import Path as BasePath
 
 import pytest
 from fsspec import AbstractFileSystem
+from fsspec_pydantic import DirectoryPath
 
-from organizeit2 import Directory, DirectoryPath, File, OrganizeIt, Path
+from organizeit2 import Directory, File, OrganizeIt, Path
 
 
 class TestTypes:

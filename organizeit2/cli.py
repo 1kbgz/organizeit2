@@ -1,7 +1,8 @@
+from typing import Annotated
+
 from rich.console import Console
 from rich.table import Table
 from typer import Exit, Option, Typer
-from typing_extensions import Annotated
 
 from organizeit2 import Directory
 
