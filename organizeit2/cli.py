@@ -30,79 +30,39 @@ def _unmatched_table(unmatch, size: bool = False, modified: bool = False):
         print("All matched")
 
 
-def match(
+def _internal(
+    match_type: str,
     directory: str,
     pattern: str,
     *,
-    list: Annotated[bool, Option("--list/--no-list", "-l/-L")] = False,
-    name_only: Annotated[bool, Option("--name-only/--no-name-only", "-n/-N")] = True,
-    invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
-    size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
-    modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
-    limit: Annotated[int, Option("--limit")] = None,
-    leaves: Annotated[int, Option("--leaves")] = None,
-    by: Annotated[str, Option("--by")] = None,
-    desc: Annotated[bool, Option("--desc")] = False,
-    block_size: Annotated[int, Option("--block-size")] = 0,
+    list: bool = False,
+    name_only: bool = True,
+    invert: bool = False,
+    size: bool = False,
+    modified: bool = False,
+    limit: int = None,
+    leaves: int = None,
+    by: str = None,
+    desc: bool = False,
+    block_size: int = 0,
 ) -> bool:
     p = Directory(path=directory).resolve()
-    if not isinstance(p, Directory) or not directory.endswith("/"):
-        matched = [p] if p.resolve().match(pattern, name_only=name_only, invert=invert) else []
-        all = [] if matched else [p]
-    else:
-        matched = p.all_match(pattern, name_only=name_only, invert=invert)
-        all = p.ls()
-
-    # calculate the overlap
-    intersection = _list(set(all) - set(matched))
-
-    # Handle limit
-    if limit or leaves:
-        if by == "age":
-            intersection = sorted(intersection, key=lambda x: x.modified(), reverse=desc)
-        elif by == "size":
-            intersection = sorted(intersection, key=lambda x: x.size(block_size), reverse=desc)
-        elif by is None:
-            # Don't do anything
-            pass
+    matched = []
+    all = []
+    if match_type == "match":
+        if not isinstance(p, Directory) or not directory.endswith("/"):
+            matched = [p] if p.resolve().match(pattern, name_only=name_only, invert=invert) else []
+            all = [] if matched else [p]
         else:
-            raise NotImplementedError()
-
-        if leaves:
-            intersection = intersection[:-leaves]
-        if limit:
-            intersection = intersection[:limit]
-
-    if list:
-        for _ in intersection:
-            print(_.as_posix())
-    else:
-        _unmatched_table(intersection, size=size or by == "size", modified=modified or by == "modified")
-    raise Exit(min(len(intersection), 1))
-
-
-def rematch(
-    directory: str,
-    pattern: str,
-    *,
-    list: Annotated[bool, Option("--list/--no-list", "-l/-L")] = False,
-    name_only: Annotated[bool, Option("--name-only/--no-name-only", "-n/-N")] = True,
-    invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
-    size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
-    modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
-    limit: Annotated[int, Option("--limit")] = None,
-    leaves: Annotated[int, Option("--leaves")] = None,
-    by: Annotated[str, Option("--by")] = None,
-    desc: Annotated[bool, Option("--desc")] = False,
-    block_size: Annotated[int, Option("--block-size")] = 0,
-) -> bool:
-    p = Directory(path=directory).resolve()
-    if not isinstance(p, Directory) or not directory.endswith("/"):
-        matched = [p] if p.resolve().rematch(pattern, name_only=name_only, invert=invert) else []
-        all = [] if matched else [p]
-    else:
-        matched = p.all_rematch(pattern, name_only=name_only, invert=invert)
-        all = p.ls()
+            matched = p.all_match(pattern, name_only=name_only, invert=invert)
+            all = p.ls()
+    elif match_type == "rematch":
+        if not isinstance(p, Directory) or not directory.endswith("/"):
+            matched = [p] if p.resolve().rematch(pattern, name_only=name_only, invert=invert) else []
+            all = [] if matched else [p]
+        else:
+            matched = p.all_rematch(pattern, name_only=name_only, invert=invert)
+            all = p.ls()
 
     # calculate the overlap
     intersection = _list(set(all) - set(matched))
@@ -132,6 +92,70 @@ def rematch(
     else:
         _unmatched_table(intersection, size=size or by == "size", modified=modified or by == "modified")
     raise Exit(return_code)
+
+
+def match(
+    directory: str,
+    pattern: str,
+    *,
+    list: Annotated[bool, Option("--list/--no-list", "-l/-L")] = False,
+    name_only: Annotated[bool, Option("--name-only/--no-name-only", "-n/-N")] = True,
+    invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
+    size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
+    modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
+    limit: Annotated[int, Option("--limit")] = None,
+    leaves: Annotated[int, Option("--leaves")] = None,
+    by: Annotated[str, Option("--by")] = None,
+    desc: Annotated[bool, Option("--desc")] = False,
+    block_size: Annotated[int, Option("--block-size")] = 0,
+) -> bool:
+    return _internal(
+        match_type="match",
+        directory=directory,
+        pattern=pattern,
+        list=list,
+        name_only=name_only,
+        invert=invert,
+        size=size,
+        modified=modified,
+        limit=limit,
+        leaves=leaves,
+        by=by,
+        desc=desc,
+        block_size=block_size,
+    )
+
+
+def rematch(
+    directory: str,
+    pattern: str,
+    *,
+    list: Annotated[bool, Option("--list/--no-list", "-l/-L")] = False,
+    name_only: Annotated[bool, Option("--name-only/--no-name-only", "-n/-N")] = True,
+    invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
+    size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
+    modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
+    limit: Annotated[int, Option("--limit")] = None,
+    leaves: Annotated[int, Option("--leaves")] = None,
+    by: Annotated[str, Option("--by")] = None,
+    desc: Annotated[bool, Option("--desc")] = False,
+    block_size: Annotated[int, Option("--block-size")] = 0,
+) -> bool:
+    return _internal(
+        match_type="rematch",
+        directory=directory,
+        pattern=pattern,
+        list=list,
+        name_only=name_only,
+        invert=invert,
+        size=size,
+        modified=modified,
+        limit=limit,
+        leaves=leaves,
+        by=by,
+        desc=desc,
+        block_size=block_size,
+    )
 
 
 def main(_test: bool = False):
