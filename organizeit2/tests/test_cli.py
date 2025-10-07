@@ -177,3 +177,27 @@ def test_rematch_leaves(directory_str):
         assert len(table_mock.call_args_list[0][0][0]) == 2
         assert str(table_mock.call_args_list[0][0][0][0]).endswith("subdir1/file1.png")
         assert str(table_mock.call_args_list[0][0][0][1]).endswith("subdir1/file2.png")
+
+
+def test_rematch_op_touch(directory_str):
+    directory_str = directory_str + "/subdir1/"
+    with patch("organizeit2.cli.print") as print_mock:
+        try:
+            rematch(directory_str, ".*", list=False, limit=5, invert=True, by="size", desc=True, op="touch", dry_run=True)
+        except Exit:
+            pass
+        assert print_mock.call_count == 5
+        assert print_mock.call_args_list[0][0][0].startswith("touch ")
+        assert print_mock.call_args_list[0][0][0].endswith("organizeit2/tests/directory/subdir1/file2.txt")
+
+
+def test_rematch_op_rm(directory_str):
+    directory_str = directory_str + "/subdir1/"
+    with patch("organizeit2.cli.print") as print_mock:
+        try:
+            rematch(directory_str, ".*", list=False, limit=5, invert=True, by="size", desc=True, op="rm", dry_run=True)
+        except Exit:
+            pass
+        assert print_mock.call_count == 5
+        assert print_mock.call_args_list[0][0][0].startswith("rm ")
+        assert print_mock.call_args_list[0][0][0].endswith("organizeit2/tests/directory/subdir1/file2.txt")

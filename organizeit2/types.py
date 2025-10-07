@@ -56,6 +56,9 @@ class SharedAPI:
         if self._can_link():
             unlink(str(self.path.path))
 
+    def rm(self):
+        self.path.fs.rm(self.path.path, recursive=isinstance(self, Directory), maxdepth=None)
+
     def resolve(self):
         path = self.path.resolve()
         if path.isdir():
