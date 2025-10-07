@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Annotated
 
 from rich.console import Console
@@ -7,6 +8,11 @@ from typer import Exit, Option, Typer
 from organizeit2 import Directory
 
 _list = list
+
+
+class OpType(str, Enum):
+    rm = "rm"
+    touch = "touch"
 
 
 def _unmatched_table(unmatch, size: bool = False, modified: bool = False):
@@ -45,6 +51,10 @@ def _internal(
     by: str = None,
     desc: bool = False,
     block_size: int = 0,
+    op: str = None,
+    dry_run: bool = False,
+    ignore_errors: bool = False,
+    retries: int = 1,
 ) -> bool:
     p = Directory(path=directory).resolve()
     matched = []
@@ -91,6 +101,52 @@ def _internal(
             print(_.as_posix())
     else:
         _unmatched_table(intersection, size=size or by == "size", modified=modified or by == "modified")
+
+    # Do the op
+    if retries > 0:
+        retries = retries - 1
+        errors = 0
+        # Do the op
+        if op and intersection:
+            match op:
+                case "rm":
+                    for _ in intersection:
+                        try:
+                            __ = print(f"rm {_.as_posix()}") if dry_run else _.rm()
+                        except Exception as e:
+                            errors += 1
+                            if retries <= 0 and not ignore_errors:
+                                raise e
+                case "touch":
+                    for _ in intersection:
+                        try:
+                            __ = print(f"touch {_.as_posix()}") if dry_run else _.touch()
+                        except Exception as e:
+                            errors += 1
+                            if retries <= 0 and not ignore_errors:
+                                raise e
+                case _:
+                    raise NotImplementedError(f"Op {op} not implemented")
+            if errors > 0 and not ignore_errors and retries > 0:
+                return _internal(
+                    match_type=match_type,
+                    directory=directory,
+                    pattern=pattern,
+                    list=list,
+                    name_only=name_only,
+                    invert=invert,
+                    size=size,
+                    modified=modified,
+                    limit=limit,
+                    leaves=leaves,
+                    by=by,
+                    desc=desc,
+                    block_size=block_size,
+                    op=op,
+                    dry_run=dry_run,
+                    ignore_errors=ignore_errors,
+                    retries=retries,
+                )
     raise Exit(return_code)
 
 
@@ -108,6 +164,10 @@ def match(
     by: Annotated[str, Option("--by")] = None,
     desc: Annotated[bool, Option("--desc")] = False,
     block_size: Annotated[int, Option("--block-size")] = 0,
+    op: Annotated[OpType, Option("--op")] = None,
+    dry_run: Annotated[bool, Option("--dry-run/--no-dry-run", "-d/-D")] = False,
+    ignore_errors: Annotated[bool, Option("--ignore-errors/--no-ignore-errors")] = False,
+    retries: Annotated[int, Option("--retries")] = 1,
 ) -> bool:
     return _internal(
         match_type="match",
@@ -123,6 +183,10 @@ def match(
         by=by,
         desc=desc,
         block_size=block_size,
+        op=op,
+        dry_run=dry_run,
+        ignore_errors=ignore_errors,
+        retries=retries,
     )
 
 
@@ -140,6 +204,10 @@ def rematch(
     by: Annotated[str, Option("--by")] = None,
     desc: Annotated[bool, Option("--desc")] = False,
     block_size: Annotated[int, Option("--block-size")] = 0,
+    op: Annotated[OpType, Option("--op")] = None,
+    dry_run: Annotated[bool, Option("--dry-run/--no-dry-run", "-d/-D")] = False,
+    ignore_errors: Annotated[bool, Option("--ignore-errors/--no-ignore-errors")] = False,
+    retries: Annotated[int, Option("--retries")] = 1,
 ) -> bool:
     return _internal(
         match_type="rematch",
@@ -155,6 +223,10 @@ def rematch(
         by=by,
         desc=desc,
         block_size=block_size,
+        op=op,
+        dry_run=dry_run,
+        ignore_errors=ignore_errors,
+        retries=retries,
     )
 
 
