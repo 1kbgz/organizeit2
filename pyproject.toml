@@ -8,18 +8,12 @@ authors = [{name = "the organizeit2 authors", email = "t.paine154@gmail.com"}]
 description = "Engage with Zorp!"
 readme = "README.md"
 license = { text = "Apache-2.0" }
-<<<<<<< before updating
 version = "0.7.2"
 requires-python = ">=3.10"
 keywords = [
     "pydantic",
     "filesystem",
 ]
-=======
-version = "0.1.0"
-requires-python = ">=3.10"
-keywords = []
->>>>>>> after updating
 
 classifiers = [
     "Development Status :: 3 - Alpha",
