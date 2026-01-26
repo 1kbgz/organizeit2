@@ -1,8 +1,8 @@
 # Changes here will be overwritten by Copier
 _commit: b74d698
 _src_path: https://github.com/python-project-templates/base.git
-add_docs: false
-add_extension: python
+add_docs: true
+add_extension: rust
 add_wiki: false
 email: t.paine154@gmail.com
 github: 1kbgz
