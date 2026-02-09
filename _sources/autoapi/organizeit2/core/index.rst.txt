@@ -1,0 +1,45 @@
+organizeit2.core
+================
+
+.. py:module:: organizeit2.core
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   organizeit2.core.OrganizeIt
+
+
+Module Contents
+---------------
+
+.. py:class:: OrganizeIt(/, **data: Any)
+
+   Bases: :py:obj:`ccflow.BaseModel`
+
+
+   BaseModel is a base class for all pydantic models within the cubist flow framework.
+
+   This gives us a way to add functionality to the framework, including
+       - Type of object is part of serialization/deserialization
+       - Registration by name, and coercion from string name to allow for object re-use from the configs
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: fs
+      :type:  fsspec_pydantic.FileSystem
+      :value: None
+
+
+
+   .. py:method:: expand(directory) -> organizeit2.types.Directory
+
+

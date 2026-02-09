@@ -1,0 +1,22 @@
+test_regressions
+================
+
+.. py:module:: test_regressions
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   test_regressions.TestRegressions
+
+
+Module Contents
+---------------
+
+.. py:class:: TestRegressions
+
+   .. py:method:: test_bad_symlink(tempdir, directory_str)
+
+

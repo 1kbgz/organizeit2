@@ -1,0 +1,25 @@
+conftest
+========
+
+.. py:module:: conftest
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   conftest.tempdir
+   conftest.directory_str
+   conftest.directory_str_extra
+
+
+Module Contents
+---------------
+
+.. py:function:: tempdir()
+
+.. py:function:: directory_str()
+
+.. py:function:: directory_str_extra()
+

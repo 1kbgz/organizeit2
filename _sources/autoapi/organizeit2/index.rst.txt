@@ -1,0 +1,166 @@
+organizeit2
+===========
+
+.. py:module:: organizeit2
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/organizeit2/cli/index
+   /autoapi/organizeit2/core/index
+   /autoapi/organizeit2/types/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   organizeit2.__version__
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   organizeit2.OrganizeIt
+   organizeit2.Directory
+   organizeit2.File
+   organizeit2.Path
+
+
+Package Contents
+----------------
+
+.. py:data:: __version__
+   :value: '0.7.2'
+
+
+.. py:class:: OrganizeIt(/, **data: Any)
+
+   Bases: :py:obj:`ccflow.BaseModel`
+
+
+   BaseModel is a base class for all pydantic models within the cubist flow framework.
+
+   This gives us a way to add functionality to the framework, including
+       - Type of object is part of serialization/deserialization
+       - Registration by name, and coercion from string name to allow for object re-use from the configs
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: fs
+      :type:  fsspec_pydantic.FileSystem
+      :value: None
+
+
+
+   .. py:method:: expand(directory) -> organizeit2.types.Directory
+
+
+.. py:class:: Directory(/, **data: Any)
+
+   Bases: :py:obj:`SharedAPI`, :py:obj:`ccflow.BaseModel`
+
+
+   BaseModel is a base class for all pydantic models within the cubist flow framework.
+
+   This gives us a way to add functionality to the framework, including
+       - Type of object is part of serialization/deserialization
+       - Registration by name, and coercion from string name to allow for object re-use from the configs
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: path
+      :type:  fsspec_pydantic.DirectoryPath
+
+
+   .. py:method:: __repr__() -> str
+
+
+   .. py:method:: ls()
+
+
+   .. py:method:: list()
+
+
+   .. py:method:: __len__() -> int
+
+
+   .. py:method:: _recurse_gen()
+
+
+   .. py:method:: recurse()
+
+
+   .. py:method:: size(block_size: int = 4096) -> int
+
+
+   .. py:method:: apply(foo, include_dir: bool = False, recursive: bool = False)
+
+
+.. py:class:: File(/, **data: Any)
+
+   Bases: :py:obj:`SharedAPI`, :py:obj:`ccflow.BaseModel`
+
+
+   BaseModel is a base class for all pydantic models within the cubist flow framework.
+
+   This gives us a way to add functionality to the framework, including
+       - Type of object is part of serialization/deserialization
+       - Registration by name, and coercion from string name to allow for object re-use from the configs
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: path
+      :type:  fsspec_pydantic.FilePath
+
+
+   .. py:method:: __repr__() -> str
+
+
+   .. py:method:: size(block_size: int = 4096) -> int
+
+
+.. py:class:: Path(/, **data: Any)
+
+   Bases: :py:obj:`SharedAPI`, :py:obj:`ccflow.BaseModel`
+
+
+   BaseModel is a base class for all pydantic models within the cubist flow framework.
+
+   This gives us a way to add functionality to the framework, including
+       - Type of object is part of serialization/deserialization
+       - Registration by name, and coercion from string name to allow for object re-use from the configs
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+

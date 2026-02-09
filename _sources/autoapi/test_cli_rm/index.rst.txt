@@ -1,0 +1,29 @@
+test_cli_rm
+===========
+
+.. py:module:: test_cli_rm
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   test_cli_rm.runner
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   test_cli_rm.test_rematch_op_rm_real
+
+
+Module Contents
+---------------
+
+.. py:data:: runner
+
+.. py:function:: test_rematch_op_rm_real(directory_str_extra)
+

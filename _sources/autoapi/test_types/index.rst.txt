@@ -1,0 +1,64 @@
+test_types
+==========
+
+.. py:module:: test_types
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   test_types.TestTypes
+
+
+Module Contents
+---------------
+
+.. py:class:: TestTypes
+
+   .. py:method:: test_oit2(tempdir)
+
+
+   .. py:method:: test_directory(tempdir)
+
+
+   .. py:method:: test_directory_file_resolve(directory_str)
+
+
+   .. py:method:: test_directory_from_directorypath()
+
+
+   .. py:method:: test_directory_ls(directory_str)
+
+
+   .. py:method:: test_directory_recurse(directory_str)
+
+
+   .. py:method:: test_path_hashable(directory_str)
+
+
+   .. py:method:: test_size(directory_str)
+
+
+   .. py:method:: test_link(directory_str)
+
+
+   .. py:method:: test_cant_link(directory_str)
+
+
+   .. py:method:: test_match(directory_str)
+
+
+   .. py:method:: test_all_match(directory_str)
+
+
+   .. py:method:: test_rematch(directory_str)
+
+
+   .. py:method:: test_all_rematch(directory_str)
+
+
+   .. py:method:: test_convenience()
+
+

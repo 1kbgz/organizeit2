@@ -1,0 +1,74 @@
+test_cli
+========
+
+.. py:module:: test_cli
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   test_cli.runner
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   test_cli.test_match
+   test_cli.test_all_match
+   test_cli.test_rematch
+   test_cli.test_all_rematch
+   test_cli.test_match_limit_leaves
+   test_cli.test_rematch_limit_leaves
+   test_cli.test_match_limit_leaves_by_size
+   test_cli.test_rematch_limit_leaves_by_size
+   test_cli.test_match_limit_leaves_desc
+   test_cli.test_rematch_limit_leaves_desc
+   test_cli.test_match_limit
+   test_cli.test_rematch_limit
+   test_cli.test_match_leaves
+   test_cli.test_rematch_leaves
+   test_cli.test_rematch_op_touch
+   test_cli.test_rematch_op_rm
+
+
+Module Contents
+---------------
+
+.. py:data:: runner
+
+.. py:function:: test_match(directory_str)
+
+.. py:function:: test_all_match(directory_str)
+
+.. py:function:: test_rematch(directory_str)
+
+.. py:function:: test_all_rematch(directory_str)
+
+.. py:function:: test_match_limit_leaves(directory_str)
+
+.. py:function:: test_rematch_limit_leaves(directory_str)
+
+.. py:function:: test_match_limit_leaves_by_size(directory_str)
+
+.. py:function:: test_rematch_limit_leaves_by_size(directory_str)
+
+.. py:function:: test_match_limit_leaves_desc(directory_str)
+
+.. py:function:: test_rematch_limit_leaves_desc(directory_str)
+
+.. py:function:: test_match_limit(directory_str)
+
+.. py:function:: test_rematch_limit(directory_str)
+
+.. py:function:: test_match_leaves(directory_str)
+
+.. py:function:: test_rematch_leaves(directory_str)
+
+.. py:function:: test_rematch_op_touch(directory_str)
+
+.. py:function:: test_rematch_op_rm(directory_str)
+

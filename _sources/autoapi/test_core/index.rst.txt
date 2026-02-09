@@ -1,0 +1,22 @@
+test_core
+=========
+
+.. py:module:: test_core
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   test_core.TestCore
+
+
+Module Contents
+---------------
+
+.. py:class:: TestCore
+
+   .. py:method:: test_core()
+
+

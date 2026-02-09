@@ -1,0 +1,22 @@
+test_backends
+=============
+
+.. py:module:: test_backends
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   test_backends.TestBackends
+
+
+Module Contents
+---------------
+
+.. py:class:: TestBackends
+
+   .. py:method:: test_s3()
+
+

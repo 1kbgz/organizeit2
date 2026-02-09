@@ -1,0 +1,78 @@
+organizeit2.cli
+===============
+
+.. py:module:: organizeit2.cli
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   organizeit2.cli._list
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   organizeit2.cli.OpType
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   organizeit2.cli._unmatched_table
+   organizeit2.cli._internal
+   organizeit2.cli.match
+   organizeit2.cli.rematch
+   organizeit2.cli.main
+
+
+Module Contents
+---------------
+
+.. py:data:: _list
+
+.. py:class:: OpType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   str(object='') -> str
+   str(bytes_or_buffer[, encoding[, errors]]) -> str
+
+   Create a new string object from the given object. If encoding or
+   errors is specified, then the object must expose a data buffer
+   that will be decoded using the given encoding and error handler.
+   Otherwise, returns the result of object.__str__() (if defined)
+   or repr(object).
+   encoding defaults to sys.getdefaultencoding().
+   errors defaults to 'strict'.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: rm
+      :value: 'rm'
+
+
+
+   .. py:attribute:: touch
+      :value: 'touch'
+
+
+
+.. py:function:: _unmatched_table(unmatch, size: bool = False, modified: bool = False)
+
+.. py:function:: _internal(match_type: str, directory: str, pattern: str, *, list: bool = False, name_only: bool = True, invert: bool = False, size: bool = False, modified: bool = False, limit: int = None, leaves: int = None, by: str = None, desc: bool = False, block_size: int = 0, op: str = None, dry_run: bool = False, ignore_errors: bool = False, retries: int = 1) -> bool
+
+.. py:function:: match(directory: str, pattern: str, *, list: Annotated[bool, Option('--list/--no-list', '-l/-L')] = False, name_only: Annotated[bool, Option('--name-only/--no-name-only', '-n/-N')] = True, invert: Annotated[bool, Option('--invert/--no-invert', '-i/-I')] = False, size: Annotated[bool, Option('--size/--no-size', '-s/-S')] = False, modified: Annotated[bool, Option('--modified/--no-modified', '-m/-M')] = False, limit: Annotated[int, Option('--limit')] = None, leaves: Annotated[int, Option('--leaves')] = None, by: Annotated[str, Option('--by')] = None, desc: Annotated[bool, Option('--desc')] = False, block_size: Annotated[int, Option('--block-size')] = 0, op: Annotated[OpType, Option('--op')] = None, dry_run: Annotated[bool, Option('--dry-run/--no-dry-run', '-d/-D')] = False, ignore_errors: Annotated[bool, Option('--ignore-errors/--no-ignore-errors')] = False, retries: Annotated[int, Option('--retries')] = 1) -> bool
+
+.. py:function:: rematch(directory: str, pattern: str, *, list: Annotated[bool, Option('--list/--no-list', '-l/-L')] = False, name_only: Annotated[bool, Option('--name-only/--no-name-only', '-n/-N')] = True, invert: Annotated[bool, Option('--invert/--no-invert', '-i/-I')] = False, size: Annotated[bool, Option('--size/--no-size', '-s/-S')] = False, modified: Annotated[bool, Option('--modified/--no-modified', '-m/-M')] = False, limit: Annotated[int, Option('--limit')] = None, leaves: Annotated[int, Option('--leaves')] = None, by: Annotated[str, Option('--by')] = None, desc: Annotated[bool, Option('--desc')] = False, block_size: Annotated[int, Option('--block-size')] = 0, op: Annotated[OpType, Option('--op')] = None, dry_run: Annotated[bool, Option('--dry-run/--no-dry-run', '-d/-D')] = False, ignore_errors: Annotated[bool, Option('--ignore-errors/--no-ignore-errors')] = False, retries: Annotated[int, Option('--retries')] = 1) -> bool
+
+.. py:function:: main(_test: bool = False)
+
