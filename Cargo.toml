@@ -1,0 +1,18 @@
+[package]
+name = "organizeit2_py"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "organizeit2"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+organizeit2 = { path = "./rust", version = "*" }
+pyo3 = { version = "0.27.1", features = ["abi3-py39", "extension-module", "multiple-pymethods"] }
+
+[profile.release]
+panic = 'abort'
+lto = true

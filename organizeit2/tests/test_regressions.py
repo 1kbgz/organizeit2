@@ -1,9 +1,13 @@
 import os
+import sys
+
+import pytest
 
 from organizeit2 import Directory
 
 
 class TestRegressions:
+    @pytest.mark.skipif(sys.platform == "win32", reason="Symlinks behave differently on Windows")
     def test_bad_symlink(self, tempdir, directory_str):
         # Make a bad symlink in tempdir
         bad_symlink_path = os.path.join(tempdir, "bad_symlink")

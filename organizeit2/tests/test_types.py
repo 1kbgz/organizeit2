@@ -10,16 +10,18 @@ from organizeit2 import Directory, File, OrganizeIt, Path
 class TestTypes:
     def test_oit2(self, tempdir):
         oi = OrganizeIt(fs=f"local://{tempdir}")
-        assert str(oi.expand("/tmp")) == "file:///tmp"
+        expected = f"file://{tempdir.replace(chr(92), '/')}"
+        assert str(oi.expand(tempdir)) == expected
 
-    def test_directory(self):
-        d = Directory(path="local:///tmp")
+    def test_directory(self, tempdir):
+        d = Directory(path=f"local://{tempdir}")
         assert isinstance(d.path.fs, AbstractFileSystem)
         assert isinstance(d.path.path, BasePath)
-        assert d.model_dump_json() == '{"path":"file:///tmp","type_":"organizeit2.types.Directory"}'
-        assert repr(d) == "Directory(path=file:///tmp)"
-        assert str(d) == "file:///tmp"
-        assert str(d.path) == "file:///tmp"
+        expected_path = f"file://{tempdir.replace(chr(92), '/')}"
+        assert d.model_dump_json() == f'{{"path":"{expected_path}","type_":"organizeit2.types.Directory"}}'
+        assert repr(d) == f"Directory(path={expected_path})"
+        assert str(d) == expected_path
+        assert str(d.path) == expected_path
 
     def test_directory_file_resolve(self, directory_str):
         assert isinstance(File(path=directory_str).resolve(), Directory)
