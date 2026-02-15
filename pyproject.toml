@@ -1,10 +1,15 @@
 [build-system]
-requires = ["hatchling", "hatch-rs>=0.1.4"]
+requires = [
+    "hatchling",
+    "hatch-rs>=0.1.4",
+]
 build-backend="hatchling.build"
 
 [project]
 name = "organizeit2"
-authors = [{name = "the organizeit2 authors", email = "t.paine154@gmail.com"}]
+authors = [
+    {name = "the organizeit2 authors", email = "t.paine154@gmail.com"},
+]
 description = "Engage with Zorp!"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -54,6 +59,8 @@ develop = [
     "pytest-cov",
     "ruff>=0.9,<0.16",
     "twine",
+    "ty",
+    "uv",
     "wheel",
     # backends
     "s3fs",
@@ -160,27 +167,58 @@ module = "organizeit2"
 path = "."
 
 [tool.hatch.build.targets.sdist]
-packages = ["organizeit2", "/rust", "/src"]
-sources = ["."]
+packages = [
+    "organizeit2",
+    "/rust",
+    "/src",
+]
+sources = [
+    ".",
+]
 
 [tool.hatch.build.targets.wheel]
-packages = ["organizeit2"]
+packages = [
+    "organizeit2",
+]
 
 [tool.pytest.ini_options]
-addopts = ["-vvv", "--junitxml=junit.xml"]
+addopts = [
+    "-vvv",
+    "--junitxml=junit.xml",
+]
 testpaths = "organizeit2/tests"
 
 [tool.ruff]
 line-length = 150
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = [
+    "I",
+]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
 default-section = "third-party"
-known-first-party = ["organizeit2"]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+known-first-party = [
+    "organizeit2",
+]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403"]
+"__init__.py" = [
+    "F401",
+    "F403",
+]
+
+[tool.yardang]
+title = "organizeit2"
+root = "README.md"
+pages = []
+use-autoapi = true
+
