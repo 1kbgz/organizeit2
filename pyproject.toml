@@ -116,11 +116,7 @@ ignore = [
 
 [tool.cibuildwheel]
 build = "cp310-*"
-<<<<<<< before updating
 test-command = "echo 'TODO'"
-=======
-test-command = "pytest -vvv {project}/organizeit2/tests"
->>>>>>> after updating
 test-extras = "develop"
 
 [tool.cibuildwheel.linux]
