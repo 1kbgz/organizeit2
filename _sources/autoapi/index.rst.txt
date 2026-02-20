@@ -6,9 +6,9 @@ This page contains auto-generated API reference documentation [#f1]_.
 .. toctree::
    :titlesonly:
 
+   /autoapi/test_cli/index
    /autoapi/test_all/index
    /autoapi/conftest/index
-   /autoapi/test_cli/index
    /autoapi/test_core/index
    /autoapi/test_types/index
    /autoapi/organizeit2/index
