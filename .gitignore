@@ -141,14 +141,12 @@ js/node_modules
 js/test-results
 js/playwright-report
 js/*.tgz
-organizeit2/extension
 
 # Jupyter
 .ipynb_checkpoints
 .autoversion
 Untitled*.ipynb
-!organizeit2/extension/organizeit2.json
-!organizeit2/extension/install.json
+organizeit2/extension
 organizeit2/nbextension
 organizeit2/labextension
 
@@ -157,3 +155,7 @@ organizeit2/labextension
 
 # Rust
 target
+
+# Hydra
+outputs/
+multirun/

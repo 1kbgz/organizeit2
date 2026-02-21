@@ -3,7 +3,7 @@ requires = [
     "hatchling",
     "hatch-rs>=0.1.4",
 ]
-build-backend="hatchling.build"
+build-backend = "hatchling.build"
 
 [project]
 name = "organizeit2"
@@ -48,16 +48,16 @@ cli = [
 develop = [
     "build",
     "bump-my-version",
-    "check-manifest",
+    "check-dist",
     "cibuildwheel",
-    "codespell>=2.4,<2.5",
+    "codespell",
     "hatch-rs",
     "hatchling",
-    "mdformat>=0.7.22,<1.1",
+    "mdformat",
     "mdformat-tables>=1",
     "pytest",
     "pytest-cov",
-    "ruff>=0.9,<0.16",
+    "ruff",
     "twine",
     "ty",
     "uv",
@@ -101,18 +101,6 @@ replace = 'version = "{new_version}"'
 filename = "rust/Cargo.toml"
 search = 'version = "{current_version}"'
 replace = 'version = "{new_version}"'
-
-[tool.check-manifest]
-ignore = [
-    ".copier-answers.yaml",
-    "Cargo.toml",
-    "Cargo.lock",
-    "Makefile",
-    "docs/**/*",
-    "rust/.config/*",
-    "rust/Cargo.lock",
-    "rust/README.md",
-]
 
 [tool.cibuildwheel]
 build = "cp310-*"
@@ -169,16 +157,21 @@ path = "."
 [tool.hatch.build.targets.sdist]
 packages = [
     "organizeit2",
-    "/rust",
-    "/src",
+    "rust",
+    "Cargo.toml",
+    "Cargo.lock",
 ]
-sources = [
-    ".",
+exclude = [
+    "rust/Makefile",
+    "target",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = [
     "organizeit2",
+]
+exclude = [
+    "rust",
 ]
 
 [tool.pytest.ini_options]
