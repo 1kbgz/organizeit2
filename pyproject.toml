@@ -214,6 +214,9 @@ section-order = [
 [tool.yardang]
 title = "organizeit2"
 root = "README.md"
-pages = []
-use-autoapi = true
-
+pages = [
+    "docs/src/usage.md",
+    "docs/src/rust.md",
+    "docs/src/api.md",
+]
+use-autoapi = false
