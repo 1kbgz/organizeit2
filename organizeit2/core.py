@@ -14,5 +14,5 @@ __all__ = ("OrganizeIt",)
 class OrganizeIt(BaseModel):
     fs: FileSystem = Field(default_factory=LocalFileSystem)
 
-    def expand(self, directory) -> Directory:
+    def expand(self, directory) -> "Directory":
         return Directory(path=self.fs.unstrip_protocol(directory))
