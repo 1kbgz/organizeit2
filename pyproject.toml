@@ -34,11 +34,7 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 
-dependencies = [
-    "ccflow",
-    "fsspec",
-    "fsspec-pydantic",
-]
+dependencies = []
 
 [project.optional-dependencies]
 cli = [
@@ -63,6 +59,7 @@ develop = [
     "uv",
     "wheel",
     # backends
+    "fsspec-rs",
     "s3fs",
     # cli
     "rich",
@@ -214,6 +211,9 @@ section-order = [
 [tool.yardang]
 title = "organizeit2"
 root = "README.md"
-pages = []
-use-autoapi = true
-
+pages = [
+    "docs/src/usage.md",
+    "docs/src/rust.md",
+    "docs/src/api.md",
+]
+use-autoapi = false

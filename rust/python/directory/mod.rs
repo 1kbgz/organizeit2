@@ -1,11 +1,15 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
+use std::path::PathBuf;
+use std::sync::Arc;
+
 use ::organizeit2::PathLike;
 
 use ::organizeit2::Directory as BaseDirectory;
 
 use super::entry_to_pyobject;
+use super::PyFsspecFileSystem;
 
 #[pyclass(from_py_object)]
 #[derive(Clone)]
@@ -17,9 +21,19 @@ pub struct Directory {
 impl Directory {
     #[new]
     #[pyo3(signature = (path))]
-    fn new(path: String) -> Self {
-        Directory {
-            inner: BaseDirectory::new(&path),
+    fn new(path: String) -> PyResult<Self> {
+        match BaseDirectory::new(&path) {
+            Ok(inner) => Ok(Directory { inner }),
+            Err(_) => {
+                // Fallback: try Python fsspec for unknown protocols
+                let (fs, stripped) = PyFsspecFileSystem::from_url(&path)?;
+                let filesystem = Arc::new(fs) as Arc<dyn fsspec_rs::FileSystem + Send + Sync>;
+                let inner = BaseDirectory {
+                    path: PathBuf::from(&stripped),
+                    filesystem,
+                };
+                Ok(Directory { inner })
+            }
         }
     }
 
@@ -174,10 +188,8 @@ impl Directory {
             .collect()
     }
 
-    fn list(&self) -> PyResult<Vec<String>> {
-        self.inner
-            .list()
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyOSError, _>(e.to_string()))
+    fn list(&self) -> Vec<String> {
+        self.inner.list()
     }
 
     fn recurse<'py>(&self, py: Python<'py>) -> PyResult<Vec<Py<PyAny>>> {

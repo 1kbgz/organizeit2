@@ -1,18 +1,40 @@
 use std::cmp::Ordering;
 use std::fmt;
-use std::fs;
 use std::hash::{Hash, Hasher};
 use std::io;
 use std::path::{Path as StdPath, PathBuf};
+use std::sync::Arc;
 use std::time::SystemTime;
 
+use fsspec_rs::{FileSystem, FileType, LocalFs, S3Config, S3Fs};
 use regex::Regex;
 
 // =========================================================================
 // Utilities
 // =========================================================================
 
-/// Strip `file://` or `local://` protocol prefixes from a path string.
+/// Extract the protocol scheme from a path string.
+/// Returns `("file", rest)` for local paths, `("s3", rest)` for `s3://`, etc.
+/// Protocols like `file-rs://`, `s3-rs://` are returned as-is and handled by the
+/// Python fsspec adapter in the binding layer.
+pub fn extract_protocol(path: &str) -> (&str, &str) {
+    if let Some(rest) = path.strip_prefix("file://") {
+        ("file", rest)
+    } else if let Some(rest) = path.strip_prefix("local://") {
+        ("file", rest)
+    } else if let Some(idx) = path.find("://") {
+        (&path[..idx], &path[idx + 3..])
+    } else {
+        ("file", path)
+    }
+}
+
+/// Check whether a filesystem is local (file/local protocol).
+pub fn is_local_fs(fs: &Arc<dyn FileSystem + Send + Sync>) -> bool {
+    fs.protocol().iter().any(|p| *p == "file" || *p == "local")
+}
+
+/// Strip `file://` or `local://` protocol prefixes from a path string (local paths only).
 pub fn parse_path(s: &str) -> PathBuf {
     if let Some(rest) = s.strip_prefix("file://") {
         PathBuf::from(rest)
@@ -23,7 +45,7 @@ pub fn parse_path(s: &str) -> PathBuf {
     }
 }
 
-/// Format a path with a `file://` protocol prefix.
+/// Format a path with a `file://` protocol prefix (local paths only).
 pub fn format_path(p: &StdPath) -> String {
     format!("file://{}", p.to_string_lossy().replace('\\', "/"))
 }
@@ -44,6 +66,48 @@ fn normalize_path(path: &StdPath) -> PathBuf {
         }
     }
     components.iter().collect()
+}
+
+/// Detect protocol from a path string and return the appropriate filesystem.
+/// Handles local (`file://`, `local://`, bare paths) and S3 (`s3://`) natively.
+/// Returns `Err` for unknown protocols; callers (e.g. PyO3 bindings) can fall back to
+/// a Python fsspec backend.
+pub fn fs_for_path(path: &str) -> Result<Arc<dyn FileSystem + Send + Sync>, String> {
+    let (protocol, rest) = extract_protocol(path);
+    match protocol {
+        "file" | "local" => Ok(Arc::new(LocalFs::new())),
+        "s3" => {
+            // Extract bucket name from the first path component
+            let trimmed = rest.trim_start_matches('/');
+            let bucket = trimmed.split('/').next().unwrap_or(trimmed);
+            if bucket.is_empty() {
+                return Err("S3 path must include a bucket name".to_string());
+            }
+            // Helper: read env var, treating empty as unset
+            let env_non_empty =
+                |key: &str| -> Option<String> { std::env::var(key).ok().filter(|v| !v.is_empty()) };
+            let access_key_id =
+                env_non_empty("AWS_ACCESS_KEY_ID").or_else(|| env_non_empty("FSSPEC_S3_KEY"));
+            let secret_access_key = env_non_empty("AWS_SECRET_ACCESS_KEY")
+                .or_else(|| env_non_empty("FSSPEC_S3_SECRET"));
+            let anon = access_key_id.is_none() && secret_access_key.is_none();
+            let cfg = S3Config {
+                bucket: bucket.to_string(),
+                endpoint_url: env_non_empty("FSSPEC_S3_ENDPOINT_URL")
+                    .or_else(|| env_non_empty("AWS_ENDPOINT_URL")),
+                access_key_id,
+                secret_access_key,
+                session_token: env_non_empty("AWS_SESSION_TOKEN"),
+                region: env_non_empty("AWS_REGION").or_else(|| env_non_empty("AWS_DEFAULT_REGION")),
+                anon,
+                virtual_hosted_style_request: false,
+            };
+            S3Fs::new(cfg)
+                .map(|fs| Arc::new(fs) as Arc<dyn FileSystem + Send + Sync>)
+                .map_err(|e| format!("Failed to create S3 filesystem: {e}"))
+        }
+        _ => Err(format!("Unsupported protocol: {protocol}://")),
+    }
 }
 
 /// fnmatch-style glob matching (equivalent to Python's `fnmatch.fnmatch`).
@@ -125,13 +189,16 @@ fn fnmatch_recursive(name: &[u8], pattern: &[u8]) -> bool {
 /// Common behaviour shared by [`File`] and [`Directory`].
 pub trait PathLike {
     fn raw_path(&self) -> &PathBuf;
+    fn fs(&self) -> &Arc<dyn FileSystem + Send + Sync>;
 
     fn display_path(&self) -> String {
-        format_path(self.raw_path())
+        let path_str = self.raw_path().to_string_lossy().to_string();
+        self.fs().unstrip_protocol(&path_str)
     }
 
     fn exists(&self) -> bool {
-        self.raw_path().exists()
+        let path_str = self.raw_path().to_string_lossy().to_string();
+        self.fs().exists(&path_str).unwrap_or(false)
     }
 
     fn as_posix(&self) -> String {
@@ -173,27 +240,53 @@ pub trait PathLike {
                 .parent()
                 .map(|p| p.to_path_buf())
                 .unwrap_or_else(|| self.raw_path().clone()),
+            filesystem: Arc::clone(self.fs()),
         }
     }
 
     fn modified(&self) -> io::Result<SystemTime> {
-        fs::metadata(self.raw_path())?.modified()
+        let path_str = self.raw_path().to_string_lossy().to_string();
+        let info = self
+            .fs()
+            .info(&path_str)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+        info.modified
+            .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "modified time not available"))
     }
 
     fn resolve(&self) -> Entry {
-        let resolved = fs::canonicalize(self.raw_path()).unwrap_or_else(|_| {
-            if self.raw_path().is_absolute() {
-                self.raw_path().clone()
-            } else {
-                std::env::current_dir()
-                    .map(|cwd| cwd.join(self.raw_path()))
-                    .unwrap_or_else(|_| self.raw_path().clone())
-            }
-        });
-        if resolved.is_dir() {
-            Entry::Directory(Directory { path: resolved })
+        let fs = Arc::clone(self.fs());
+        let is_local = is_local_fs(&fs);
+
+        let resolved = if is_local {
+            // Try to canonicalize for local paths
+            std::fs::canonicalize(self.raw_path()).unwrap_or_else(|_| {
+                if self.raw_path().is_absolute() {
+                    self.raw_path().clone()
+                } else {
+                    std::env::current_dir()
+                        .map(|cwd| cwd.join(self.raw_path()))
+                        .unwrap_or_else(|_| self.raw_path().clone())
+                }
+            })
         } else {
-            Entry::File(File { path: resolved })
+            // For remote filesystems, just normalize (no local canonicalize)
+            normalize_path(self.raw_path())
+        };
+
+        let resolved_str = resolved.to_string_lossy().to_string();
+        let is_dir = fs.isdir(&resolved_str).unwrap_or(false);
+
+        if is_dir {
+            Entry::Directory(Directory {
+                path: resolved,
+                filesystem: fs,
+            })
+        } else {
+            Entry::File(File {
+                path: resolved,
+                filesystem: fs,
+            })
         }
     }
 
@@ -225,13 +318,16 @@ pub trait PathLike {
     }
 
     fn link_to(&self, target_path: &StdPath, soft: bool) -> Result<(), String> {
+        if !is_local_fs(self.fs()) {
+            return Err("Linking is not supported on remote filesystems".to_string());
+        }
         if target_path.symlink_metadata().is_ok() {
             if target_path
                 .symlink_metadata()
                 .map(|m| m.file_type().is_symlink())
                 .unwrap_or(false)
             {
-                fs::remove_file(target_path).map_err(|e| e.to_string())?;
+                std::fs::remove_file(target_path).map_err(|e| e.to_string())?;
             } else {
                 return Err(format!("Cannot link to {}!", format_path(target_path)));
             }
@@ -242,15 +338,21 @@ pub trait PathLike {
             #[cfg(not(unix))]
             return Err("Soft links not supported on this platform".to_string());
         } else {
-            fs::hard_link(self.raw_path(), target_path).map_err(|e| e.to_string())?;
+            std::fs::hard_link(self.raw_path(), target_path).map_err(|e| e.to_string())?;
         }
         Ok(())
     }
 
     fn unlink(&self) -> io::Result<()> {
-        if let Ok(meta) = fs::symlink_metadata(self.raw_path()) {
+        if !is_local_fs(self.fs()) {
+            return Err(io::Error::new(
+                io::ErrorKind::Unsupported,
+                "Unlinking is not supported on remote filesystems",
+            ));
+        }
+        if let Ok(meta) = std::fs::symlink_metadata(self.raw_path()) {
             if meta.file_type().is_symlink() {
-                return fs::remove_file(self.raw_path());
+                return std::fs::remove_file(self.raw_path());
             }
         }
         Ok(())
@@ -258,11 +360,25 @@ pub trait PathLike {
 
     fn join(&self, other: &str) -> Entry {
         let new_path = self.raw_path().join(other);
-        let resolved = fs::canonicalize(&new_path).unwrap_or_else(|_| normalize_path(&new_path));
-        if resolved.is_dir() {
-            Entry::Directory(Directory { path: resolved })
+        let fs = Arc::clone(self.fs());
+        let is_local = is_local_fs(&fs);
+        let resolved = if is_local {
+            std::fs::canonicalize(&new_path).unwrap_or_else(|_| normalize_path(&new_path))
         } else {
-            Entry::File(File { path: resolved })
+            normalize_path(&new_path)
+        };
+        let path_str = resolved.to_string_lossy().to_string();
+        let is_dir = fs.isdir(&path_str).unwrap_or(false);
+        if is_dir {
+            Entry::Directory(Directory {
+                path: resolved,
+                filesystem: fs,
+            })
+        } else {
+            Entry::File(File {
+                path: resolved,
+                filesystem: fs,
+            })
         }
     }
 }
@@ -271,35 +387,56 @@ pub trait PathLike {
 // File
 // =========================================================================
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct File {
     pub path: PathBuf,
+    pub filesystem: Arc<dyn FileSystem + Send + Sync>,
+}
+
+impl fmt::Debug for File {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("File").field("path", &self.path).finish()
+    }
 }
 
 impl PathLike for File {
     fn raw_path(&self) -> &PathBuf {
         &self.path
     }
+    fn fs(&self) -> &Arc<dyn FileSystem + Send + Sync> {
+        &self.filesystem
+    }
 }
 
 impl File {
-    pub fn new(path_str: &str) -> Self {
-        File {
-            path: parse_path(path_str),
-        }
+    pub fn new(path_str: &str) -> Result<Self, String> {
+        let filesystem = fs_for_path(path_str)?;
+        let stripped = filesystem.strip_protocol(path_str);
+        let path = PathBuf::from(stripped);
+        Ok(Self { path, filesystem })
+    }
+
+    pub fn with_fs(path_str: &str, filesystem: Arc<dyn FileSystem + Send + Sync>) -> Self {
+        let stripped = filesystem.strip_protocol(path_str);
+        let path = PathBuf::from(stripped);
+        Self { path, filesystem }
     }
 
     pub fn repr(&self) -> String {
         format!("File(path={})", self.display_path())
     }
 
-    pub fn size(&self, block_size: u64) -> io::Result<u64> {
-        let actual = fs::metadata(&self.path)?.len();
-        Ok(std::cmp::max(actual, block_size))
+    pub fn size(&self, block_size: u64) -> Option<u64> {
+        let path_str = self.path.to_string_lossy().to_string();
+        let file_size = self.filesystem.size(&path_str).ok()?;
+        Some(file_size.max(block_size))
     }
 
     pub fn rm(&self) -> io::Result<()> {
-        fs::remove_file(&self.path)
+        let path_str = self.path.to_string_lossy().to_string();
+        self.filesystem
+            .rm_file(&path_str)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))
     }
 }
 
@@ -338,22 +475,41 @@ impl Ord for File {
 // Directory
 // =========================================================================
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Directory {
     pub path: PathBuf,
+    pub filesystem: Arc<dyn FileSystem + Send + Sync>,
+}
+
+impl fmt::Debug for Directory {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Directory")
+            .field("path", &self.path)
+            .finish()
+    }
 }
 
 impl PathLike for Directory {
     fn raw_path(&self) -> &PathBuf {
         &self.path
     }
+    fn fs(&self) -> &Arc<dyn FileSystem + Send + Sync> {
+        &self.filesystem
+    }
 }
 
 impl Directory {
-    pub fn new(path_str: &str) -> Self {
-        Directory {
-            path: parse_path(path_str),
-        }
+    pub fn new(path_str: &str) -> Result<Self, String> {
+        let filesystem = fs_for_path(path_str)?;
+        let stripped = filesystem.strip_protocol(path_str);
+        let path = PathBuf::from(stripped);
+        Ok(Self { path, filesystem })
+    }
+
+    pub fn with_fs(path_str: &str, filesystem: Arc<dyn FileSystem + Send + Sync>) -> Self {
+        let stripped = filesystem.strip_protocol(path_str);
+        let path = PathBuf::from(stripped);
+        Self { path, filesystem }
     }
 
     pub fn repr(&self) -> String {
@@ -361,33 +517,41 @@ impl Directory {
     }
 
     pub fn ls(&self) -> Vec<Entry> {
-        let mut entries = Vec::new();
-        if let Ok(read_dir) = fs::read_dir(&self.path) {
-            for entry in read_dir.flatten() {
-                let path = entry.path();
-                // Use entry metadata (follows symlinks).  For broken
-                // symlinks metadata() fails → treat as file.
-                let is_dir = entry.metadata().map(|m| m.is_dir()).unwrap_or(false);
-                if is_dir {
-                    entries.push(Entry::Directory(Directory { path }));
-                } else {
-                    entries.push(Entry::File(File { path }));
+        let path_str = self.path.to_string_lossy().to_string();
+        let entries = match self.filesystem.ls(&path_str, true) {
+            Ok(entries) => entries,
+            Err(_) => return vec![],
+        };
+
+        let mut result: Vec<Entry> = entries
+            .into_iter()
+            .map(|info| {
+                // Normalize returned names through strip_protocol so the
+                // stored path is in the same convention the fs expects.
+                let stripped = self.filesystem.strip_protocol(&info.name);
+                let entry_path = PathBuf::from(&stripped);
+                match info.file_type {
+                    FileType::Directory => Entry::Directory(Directory {
+                        path: entry_path,
+                        filesystem: Arc::clone(&self.filesystem),
+                    }),
+                    _ => Entry::File(File {
+                        path: entry_path,
+                        filesystem: Arc::clone(&self.filesystem),
+                    }),
                 }
-            }
-        }
-        entries.sort();
-        entries
+            })
+            .collect();
+        result.sort();
+        result
     }
 
-    pub fn list(&self) -> io::Result<Vec<String>> {
-        Ok(fs::read_dir(&self.path)?
-            .flatten()
-            .map(|e| e.file_name().to_string_lossy().to_string())
-            .collect())
+    pub fn list(&self) -> Vec<String> {
+        self.ls().iter().map(|e| e.name()).collect()
     }
 
     pub fn len(&self) -> usize {
-        self.list().map(|l| l.len()).unwrap_or(0)
+        self.ls().len()
     }
 
     pub fn is_empty(&self) -> bool {
@@ -439,7 +603,10 @@ impl Directory {
     }
 
     pub fn rm(&self) -> io::Result<()> {
-        fs::remove_dir_all(&self.path)
+        let path_str = self.path.to_string_lossy().to_string();
+        self.filesystem
+            .rm(&path_str, true)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))
     }
 }
 
@@ -478,10 +645,19 @@ impl Ord for Directory {
 // Entry (union of File | Directory)
 // =========================================================================
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Entry {
     File(File),
     Directory(Directory),
+}
+
+impl fmt::Debug for Entry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Entry::File(file) => f.debug_tuple("File").field(file).finish(),
+            Entry::Directory(dir) => f.debug_tuple("Directory").field(dir).finish(),
+        }
+    }
 }
 
 impl Entry {
@@ -489,6 +665,13 @@ impl Entry {
         match self {
             Entry::File(f) => &f.path,
             Entry::Directory(d) => &d.path,
+        }
+    }
+
+    pub fn fs(&self) -> &Arc<dyn FileSystem + Send + Sync> {
+        match self {
+            Entry::File(f) => &f.filesystem,
+            Entry::Directory(d) => &d.filesystem,
         }
     }
 
@@ -606,15 +789,23 @@ impl Ord for Entry {
 // OrganizeIt
 // =========================================================================
 
-pub struct OrganizeIt;
+pub struct OrganizeIt {
+    pub filesystem: Arc<dyn FileSystem + Send + Sync>,
+}
 
 impl OrganizeIt {
     pub fn new() -> Self {
-        OrganizeIt
+        OrganizeIt {
+            filesystem: Arc::new(LocalFs::new()),
+        }
+    }
+
+    pub fn with_fs(filesystem: Arc<dyn FileSystem + Send + Sync>) -> Self {
+        OrganizeIt { filesystem }
     }
 
     pub fn expand(&self, directory: &str) -> Directory {
-        Directory::new(directory)
+        Directory::with_fs(directory, Arc::clone(&self.filesystem))
     }
 }
 
@@ -628,9 +819,14 @@ impl Default for OrganizeIt {
 // Convenience: resolve a path string to an Entry
 // =========================================================================
 
-pub fn resolve_path(path_str: &str) -> Entry {
-    let file = File::new(path_str);
-    file.resolve()
+pub fn resolve_path(path_str: &str) -> Result<Entry, String> {
+    let fs = fs_for_path(path_str)?;
+    let stripped = fs.strip_protocol(path_str);
+    let file = File {
+        path: PathBuf::from(stripped),
+        filesystem: fs,
+    };
+    Ok(file.resolve())
 }
 
 // =========================================================================
@@ -641,7 +837,12 @@ pub fn resolve_path(path_str: &str) -> Entry {
 mod tests {
     use super::*;
     use std::collections::HashSet;
+    use std::fs;
     use tempfile::TempDir;
+
+    fn local_fs() -> Arc<dyn FileSystem + Send + Sync> {
+        Arc::new(LocalFs::new())
+    }
 
     // ---- helpers ----
 
@@ -730,13 +931,13 @@ mod tests {
 
     #[test]
     fn test_file_new() {
-        let f = File::new("file:///tmp/test.txt");
+        let f = File::new("file:///tmp/test.txt").unwrap();
         assert_eq!(f.path, PathBuf::from("/tmp/test.txt"));
     }
 
     #[test]
     fn test_file_properties() {
-        let f = File::new("file:///some/path/test.txt");
+        let f = File::new("file:///some/path/test.txt").unwrap();
         assert_eq!(f.name(), "test.txt");
         assert_eq!(f.suffix(), ".txt");
         assert_eq!(f.stem(), "test");
@@ -750,23 +951,26 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let path = tmp.path().join("empty_file");
         fs::File::create(&path).unwrap();
-        let f = File { path };
+        let f = File {
+            path,
+            filesystem: local_fs(),
+        };
         // empty file → block_size wins
         assert_eq!(f.size(4096).unwrap(), 4096);
     }
 
     #[test]
     fn test_file_display_and_ordering() {
-        let a = File::new("file:///a");
-        let b = File::new("file:///b");
+        let a = File::new("file:///a").unwrap();
+        let b = File::new("file:///b").unwrap();
         assert!(a < b);
         assert_eq!(format!("{}", a), "file:///a");
     }
 
     #[test]
     fn test_file_hash_and_eq() {
-        let a = File::new("file:///tmp/x");
-        let b = File::new("file:///tmp/x");
+        let a = File::new("file:///tmp/x").unwrap();
+        let b = File::new("file:///tmp/x").unwrap();
         assert_eq!(a, b);
         let mut set = HashSet::new();
         set.insert(a);
@@ -779,7 +983,12 @@ mod tests {
         let path = tmp.path().join("to_remove");
         fs::File::create(&path).unwrap();
         assert!(path.exists());
-        File { path: path.clone() }.rm().unwrap();
+        File {
+            path: path.clone(),
+            filesystem: local_fs(),
+        }
+        .rm()
+        .unwrap();
         assert!(!path.exists());
     }
 
@@ -787,14 +996,14 @@ mod tests {
 
     #[test]
     fn test_directory_new() {
-        let d = Directory::new("local:///tmp/test");
+        let d = Directory::new("local:///tmp/test").unwrap();
         assert_eq!(d.path, PathBuf::from("/tmp/test"));
         assert_eq!(d.display_path(), "file:///tmp/test");
     }
 
     #[test]
     fn test_directory_repr() {
-        let d = Directory::new("file:///tmp/test");
+        let d = Directory::new("file:///tmp/test").unwrap();
         assert_eq!(d.repr(), "Directory(path=file:///tmp/test)");
     }
 
@@ -802,7 +1011,10 @@ mod tests {
     fn test_directory_ls() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir.clone() };
+        let d = Directory {
+            path: dir.clone(),
+            filesystem: local_fs(),
+        };
 
         let entries: Vec<String> = d.ls().iter().map(|e| e.name()).collect();
         assert_eq!(entries, vec!["subdir1", "subdir2", "subdir3", "subdir4"]);
@@ -812,7 +1024,10 @@ mod tests {
     fn test_directory_ls_str() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir.clone() };
+        let d = Directory {
+            path: dir.clone(),
+            filesystem: local_fs(),
+        };
         let root = d.display_path();
 
         let entries: Vec<String> = d.ls().iter().map(|e| e.to_string()).collect();
@@ -831,7 +1046,10 @@ mod tests {
     fn test_directory_recurse() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert_eq!(d.recurse().len(), 64);
     }
 
@@ -839,7 +1057,10 @@ mod tests {
     fn test_directory_len() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert_eq!(d.len(), 4);
     }
 
@@ -849,7 +1070,10 @@ mod tests {
     fn test_path_hashable() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         let set: HashSet<String> = d.recurse().iter().map(|e| e.to_string()).collect();
         assert_eq!(set.len(), 64);
     }
@@ -860,7 +1084,10 @@ mod tests {
     fn test_directory_size() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert_eq!(d.size(4096), 64 * 4096); // 262144
     }
 
@@ -871,7 +1098,10 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
         // Create a File pointing at a directory → resolve should give Directory
-        let f = File { path: dir.clone() };
+        let f = File {
+            path: dir.clone(),
+            filesystem: local_fs(),
+        };
         assert!(f.resolve().is_directory());
     }
 
@@ -881,7 +1111,10 @@ mod tests {
         let path = tmp.path().join("some_file");
         fs::File::create(&path).unwrap();
         // Create a Directory pointing at a file → resolve should give File
-        let d = Directory { path };
+        let d = Directory {
+            path,
+            filesystem: local_fs(),
+        };
         assert!(d.resolve().is_file());
     }
 
@@ -891,7 +1124,10 @@ mod tests {
     fn test_match_glob_name_only() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert!(d.match_glob("directory*", true, false));
         assert!(!d.match_glob("directory*", true, true)); // invert
         assert!(!d.match_glob("directory", false, false)); // full path won't match just name
@@ -901,7 +1137,10 @@ mod tests {
     fn test_match_glob_full_path() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert!(d.match_glob("*directory", false, false));
         assert!(!d.match_glob("*directory", false, true)); // invert
     }
@@ -912,7 +1151,10 @@ mod tests {
     fn test_all_match() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert_eq!(d.all_match("subdir*", true, false).len(), 4);
         assert_eq!(d.all_match("dir*", true, false).len(), 0);
     }
@@ -923,7 +1165,10 @@ mod tests {
     fn test_match_re_name_only() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert!(d.match_re("directory", true, false));
         assert!(!d.match_re("directory", true, true)); // invert
         assert!(!d.match_re("directory", false, false)); // anchored, full path starts with file://
@@ -933,7 +1178,10 @@ mod tests {
     fn test_match_re_full_path() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert!(d.match_re("file://[a-zA-Z0-9/_.-]*", false, false));
     }
 
@@ -943,7 +1191,10 @@ mod tests {
     fn test_all_rematch() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         assert_eq!(d.all_rematch("subdir[0-9]+", true, false).len(), 4);
         assert_eq!(d.all_rematch("subdir[0-3]+", true, false).len(), 3);
     }
@@ -955,7 +1206,10 @@ mod tests {
     fn test_link_and_unlink() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir };
+        let d = Directory {
+            path: dir,
+            filesystem: local_fs(),
+        };
         let link_path = tmp.path().join("directory_link");
         d.link_to(&link_path, true).unwrap();
         assert!(link_path
@@ -963,7 +1217,10 @@ mod tests {
             .unwrap()
             .file_type()
             .is_symlink());
-        let link_dir = Directory { path: link_path };
+        let link_dir = Directory {
+            path: link_path,
+            filesystem: local_fs(),
+        };
         link_dir.unlink().unwrap();
         assert!(!link_dir.path.exists());
     }
@@ -973,7 +1230,10 @@ mod tests {
     fn test_cant_link_existing() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let d = Directory { path: dir.clone() };
+        let d = Directory {
+            path: dir.clone(),
+            filesystem: local_fs(),
+        };
         // Linking to an existing non-symlink should fail
         let result = d.link_to(&dir, true);
         assert!(result.is_err());
@@ -989,6 +1249,7 @@ mod tests {
         let file_path = subdir1.join("file1.txt");
         let f = File {
             path: file_path.clone(),
+            filesystem: local_fs(),
         };
 
         // f / ".." should resolve to subdir1
@@ -1010,7 +1271,7 @@ mod tests {
 
     #[test]
     fn test_str_method() {
-        let d = Directory::new("file:///tmp/test");
+        let d = Directory::new("file:///tmp/test").unwrap();
         assert_eq!(d.to_string(), "file:///tmp/test");
         assert_eq!(d.display_path(), "file:///tmp/test");
     }
@@ -1026,6 +1287,7 @@ mod tests {
 
         let d = Directory {
             path: tmp.path().to_path_buf(),
+            filesystem: local_fs(),
         };
         assert_eq!(d.ls().len(), 1);
         assert_eq!(d.size(4096), 0);
@@ -1045,11 +1307,11 @@ mod tests {
 
     #[test]
     fn test_entry_equality() {
-        let a = Entry::File(File::new("file:///tmp/x"));
-        let b = Entry::File(File::new("file:///tmp/x"));
+        let a = Entry::File(File::new("file:///tmp/x").unwrap());
+        let b = Entry::File(File::new("file:///tmp/x").unwrap());
         assert_eq!(a, b);
 
-        let c = Entry::Directory(Directory::new("file:///tmp/x"));
+        let c = Entry::Directory(Directory::new("file:///tmp/x").unwrap());
         assert_ne!(a, c); // different variants
     }
 
@@ -1059,11 +1321,11 @@ mod tests {
     fn test_resolve_path() {
         let tmp = TempDir::new().unwrap();
         let dir = create_test_directory(tmp.path());
-        let entry = resolve_path(&format!("file://{}", dir.display()));
+        let entry = resolve_path(&format!("file://{}", dir.display())).unwrap();
         assert!(entry.is_directory());
 
         let file_path = dir.join("subdir1").join("file1.txt");
-        let entry = resolve_path(&format!("file://{}", file_path.display()));
+        let entry = resolve_path(&format!("file://{}", file_path.display())).unwrap();
         assert!(entry.is_file());
     }
 
@@ -1078,6 +1340,7 @@ mod tests {
         assert!(rm_dir.exists());
         Directory {
             path: rm_dir.clone(),
+            filesystem: local_fs(),
         }
         .rm()
         .unwrap();
@@ -1091,7 +1354,10 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let path = tmp.path().join("sized_file");
         fs::write(&path, "hello").unwrap();
-        let e = Entry::File(File { path });
+        let e = Entry::File(File {
+            path,
+            filesystem: local_fs(),
+        });
         // "hello" is 5 bytes, block_size 4096 → max(5, 4096) = 4096
         assert_eq!(e.size(4096), 4096);
         // with block_size 0 → actual size
@@ -1105,7 +1371,10 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let path = tmp.path().join("mod_file");
         fs::File::create(&path).unwrap();
-        let f = File { path };
+        let f = File {
+            path,
+            filesystem: local_fs(),
+        };
         let mtime = f.modified().unwrap();
         assert!(mtime.elapsed().unwrap().as_secs() < 10);
     }
@@ -1116,7 +1385,10 @@ mod tests {
     fn test_exists() {
         let tmp = TempDir::new().unwrap();
         let path = tmp.path().join("exists_file");
-        let f = File { path: path.clone() };
+        let f = File {
+            path: path.clone(),
+            filesystem: local_fs(),
+        };
         assert!(!f.exists());
         fs::File::create(&path).unwrap();
         assert!(f.exists());
