@@ -1,13 +1,13 @@
-# Rust Implementation
+# Rust
 
 `organizeit2` provides a pure-Rust implementation of the core types and operations,
 along with Python bindings via PyO3.
 
 ## Crate structure
 
-| Crate path | Purpose |
-|---|---|
-| `rust/src/lib.rs` | Pure Rust library (`organizeit2` crate) |
+| Crate path           | Purpose                                  |
+| -------------------- | ---------------------------------------- |
+| `rust/src/lib.rs`    | Pure Rust library (`organizeit2` crate)  |
 | `rust/python/lib.rs` | PyO3 Python bindings (root `Cargo.toml`) |
 
 ## Core types
@@ -60,32 +60,32 @@ let d = oi.expand("/tmp/mydir");
 
 Both `File` and `Directory` implement the `PathLike` trait which provides:
 
-| Method | Description |
-|---|---|
-| `display_path()` | `file://`-prefixed string |
-| `as_posix()` | Raw POSIX path string |
-| `exists()` | Whether the path exists on disk |
-| `name()` | Final path component |
-| `suffix()` | File extension including the dot |
-| `stem()` | Final component without the extension |
-| `parts()` | All path components as strings |
-| `parent()` | Parent directory |
-| `modified()` | Last-modified time (`SystemTime`) |
-| `resolve()` | Canonicalize and return the correct `Entry` variant |
-| `match_glob(pattern, name_only, invert)` | fnmatch-style glob matching |
-| `match_re(re, name_only, invert)` | Regex matching (anchored at start like Python `re.match`) |
-| `link_to(target, soft)` | Create a symlink or hard link |
-| `unlink()` | Remove a symlink |
-| `join(other)` | Join a path component and resolve |
+| Method                                   | Description                                               |
+| ---------------------------------------- | --------------------------------------------------------- |
+| `display_path()`                         | `file://`-prefixed string                                 |
+| `as_posix()`                             | Raw POSIX path string                                     |
+| `exists()`                               | Whether the path exists on disk                           |
+| `name()`                                 | Final path component                                      |
+| `suffix()`                               | File extension including the dot                          |
+| `stem()`                                 | Final component without the extension                     |
+| `parts()`                                | All path components as strings                            |
+| `parent()`                               | Parent directory                                          |
+| `modified()`                             | Last-modified time (`SystemTime`)                         |
+| `resolve()`                              | Canonicalize and return the correct `Entry` variant       |
+| `match_glob(pattern, name_only, invert)` | fnmatch-style glob matching                               |
+| `match_re(re, name_only, invert)`        | Regex matching (anchored at start like Python `re.match`) |
+| `link_to(target, soft)`                  | Create a symlink or hard link                             |
+| `unlink()`                               | Remove a symlink                                          |
+| `join(other)`                            | Join a path component and resolve                         |
 
 ## Utility functions
 
-| Function | Description |
-|---|---|
-| `parse_path(s)` | Strip `file://` / `local://` prefix → `PathBuf` |
-| `format_path(p)` | Add `file://` prefix |
-| `fnmatch(name, pattern)` | Python-compatible glob matching |
-| `resolve_path(s)` | Parse + resolve → `Entry` |
+| Function                 | Description                                     |
+| ------------------------ | ----------------------------------------------- |
+| `parse_path(s)`          | Strip `file://` / `local://` prefix → `PathBuf` |
+| `format_path(p)`         | Add `file://` prefix                            |
+| `fnmatch(name, pattern)` | Python-compatible glob matching                 |
+| `resolve_path(s)`        | Parse + resolve → `Entry`                       |
 
 ## Python bindings
 
@@ -98,13 +98,4 @@ from organizeit2 import Directory, File, OrganizeIt
 d = Directory(path="/tmp/mydir")
 for entry in d.ls():
     print(entry)
-```
-
-## Building
-
-```bash
-make build-rs   # build the Rust crate
-make build-py   # build the Python wheel (includes Rust extension)
-make test-rs    # run Rust tests
-make test-py    # run Python tests
 ```
