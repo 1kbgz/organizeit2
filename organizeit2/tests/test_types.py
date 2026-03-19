@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 
 from organizeit2 import Directory, File, OrganizeIt, Path
@@ -46,6 +48,7 @@ class TestTypes:
         d = Directory(path=directory_str)
         assert d.size() == 262144
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Symlinks require elevated privileges on Windows")
     def test_link(self, directory_str):
         d = Directory(path=directory_str)
         d2 = Directory(path=f"{directory_str}_link")

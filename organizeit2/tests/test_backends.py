@@ -6,7 +6,7 @@ from organizeit2 import Directory
 
 
 class TestBackends:
-    # ---- file:// (Rust native LocalFs) ----
+    # file:// (Rust native LocalFs)
     def test_file(self, directory_str):
         d = Directory(path=directory_str)
         root = str(d)
@@ -19,7 +19,7 @@ class TestBackends:
         ]
         assert len(d.recurse()) == 64
 
-    # ---- file-rs:// (fsspec-rs Python LocalFileSystem via adapter) ----
+    # file-rs:// (fsspec-rs Python LocalFileSystem via adapter)
     def test_file_rs(self, directory_str):
         import fsspec_rs  # noqa: F401 — ensure file-rs:// protocol is registered with fsspec
 
@@ -36,7 +36,7 @@ class TestBackends:
         ]
         assert len(d.recurse()) == 64
 
-    # ---- s3:// (Rust native S3Fs) ----
+    # s3:// (Rust native S3Fs)
     @pytest.mark.skipif(os.environ.get("FSSPEC_S3_ENDPOINT_URL") is None, reason="Skipping test that require S3 credentials")
     def test_s3(self):
         d = Directory(path="s3://timkpaine-public/projects/organizeit2")
@@ -49,7 +49,7 @@ class TestBackends:
         ]
         assert len(d.recurse()) == 64
 
-    # ---- s3-rs:// (fsspec-rs Python S3FileSystem via adapter) ----
+    # s3-rs:// (fsspec-rs Python S3FileSystem via adapter)
     @pytest.mark.skipif(os.environ.get("FSSPEC_S3_ENDPOINT_URL") is None, reason="Skipping test that require S3 credentials")
     def test_s3_rs(self):
         import fsspec_rs  # noqa: F401 — ensure s3-rs:// protocol is registered with fsspec

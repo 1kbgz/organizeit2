@@ -1,9 +1,10 @@
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::io;
 use std::path::{Path as StdPath, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::SystemTime;
 
 use fsspec_rs::{FileSystem, FileType, LocalFs, S3Config, S3Fs};
@@ -50,6 +51,20 @@ pub fn format_path(p: &StdPath) -> String {
     format!("file://{}", p.to_string_lossy().replace('\\', "/"))
 }
 
+/// On Windows, `std::fs::canonicalize` returns verbatim extended-length paths prefixed with
+/// `\\?\`. This helper strips that prefix so paths compare and display as conventional Windows
+/// paths (e.g. `C:\foo` instead of `\\?\C:\foo`).
+fn strip_verbatim_prefix(path: PathBuf) -> PathBuf {
+    #[cfg(windows)]
+    {
+        let s = path.to_string_lossy();
+        if let Some(stripped) = s.strip_prefix(r"\\?\") {
+            return PathBuf::from(stripped.to_string());
+        }
+    }
+    path
+}
+
 /// Normalize a path by resolving `.` and `..` components without touching the filesystem.
 fn normalize_path(path: &StdPath) -> PathBuf {
     use std::path::Component;
@@ -72,10 +87,24 @@ fn normalize_path(path: &StdPath) -> PathBuf {
 /// Handles local (`file://`, `local://`, bare paths) and S3 (`s3://`) natively.
 /// Returns `Err` for unknown protocols; callers (e.g. PyO3 bindings) can fall back to
 /// a Python fsspec backend.
+///
+/// Filesystem instances are cached globally so that many `File`/`Directory` objects
+/// sharing the same protocol and credentials reuse a single connection pool rather than
+/// each opening their own, which would exhaust OS file descriptors.
+static LOCAL_FS_INSTANCE: OnceLock<Arc<dyn FileSystem + Send + Sync>> = OnceLock::new();
+static S3_FS_CACHE: OnceLock<Mutex<HashMap<String, Arc<dyn FileSystem + Send + Sync>>>> =
+    OnceLock::new();
+
+fn s3_fs_cache() -> &'static Mutex<HashMap<String, Arc<dyn FileSystem + Send + Sync>>> {
+    S3_FS_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
 pub fn fs_for_path(path: &str) -> Result<Arc<dyn FileSystem + Send + Sync>, String> {
     let (protocol, rest) = extract_protocol(path);
     match protocol {
-        "file" | "local" => Ok(Arc::new(LocalFs::new())),
+        "file" | "local" => Ok(Arc::clone(
+            LOCAL_FS_INSTANCE.get_or_init(|| Arc::new(LocalFs::new())),
+        )),
         "s3" => {
             // Extract bucket name from the first path component
             let trimmed = rest.trim_start_matches('/');
@@ -86,25 +115,53 @@ pub fn fs_for_path(path: &str) -> Result<Arc<dyn FileSystem + Send + Sync>, Stri
             // Helper: read env var, treating empty as unset
             let env_non_empty =
                 |key: &str| -> Option<String> { std::env::var(key).ok().filter(|v| !v.is_empty()) };
+            let endpoint_url = env_non_empty("FSSPEC_S3_ENDPOINT_URL")
+                .or_else(|| env_non_empty("AWS_ENDPOINT_URL"));
             let access_key_id =
                 env_non_empty("AWS_ACCESS_KEY_ID").or_else(|| env_non_empty("FSSPEC_S3_KEY"));
             let secret_access_key = env_non_empty("AWS_SECRET_ACCESS_KEY")
                 .or_else(|| env_non_empty("FSSPEC_S3_SECRET"));
+            let session_token = env_non_empty("AWS_SESSION_TOKEN");
+            let region =
+                env_non_empty("AWS_REGION").or_else(|| env_non_empty("AWS_DEFAULT_REGION"));
             let anon = access_key_id.is_none() && secret_access_key.is_none();
+
+            // Cache key uniquely identifies a (bucket × credentials × endpoint) combination.
+            let cache_key = format!(
+                "s3:{}:{}:{}:{}:{}:{}",
+                bucket,
+                endpoint_url.as_deref().unwrap_or(""),
+                access_key_id.as_deref().unwrap_or(""),
+                session_token.as_deref().unwrap_or(""),
+                region.as_deref().unwrap_or(""),
+                anon,
+            );
+
+            {
+                let cache = s3_fs_cache().lock().unwrap();
+                if let Some(fs) = cache.get(&cache_key) {
+                    return Ok(Arc::clone(fs));
+                }
+            }
+
             let cfg = S3Config {
                 bucket: bucket.to_string(),
-                endpoint_url: env_non_empty("FSSPEC_S3_ENDPOINT_URL")
-                    .or_else(|| env_non_empty("AWS_ENDPOINT_URL")),
+                endpoint_url,
                 access_key_id,
                 secret_access_key,
-                session_token: env_non_empty("AWS_SESSION_TOKEN"),
-                region: env_non_empty("AWS_REGION").or_else(|| env_non_empty("AWS_DEFAULT_REGION")),
+                session_token,
+                region,
                 anon,
                 virtual_hosted_style_request: false,
             };
-            S3Fs::new(cfg)
+            let fs = S3Fs::new(cfg)
                 .map(|fs| Arc::new(fs) as Arc<dyn FileSystem + Send + Sync>)
-                .map_err(|e| format!("Failed to create S3 filesystem: {e}"))
+                .map_err(|e| format!("Failed to create S3 filesystem: {e}"))?;
+            s3_fs_cache()
+                .lock()
+                .unwrap()
+                .insert(cache_key, Arc::clone(&fs));
+            Ok(fs)
         }
         _ => Err(format!("Unsupported protocol: {protocol}://")),
     }
@@ -192,7 +249,9 @@ pub trait PathLike {
     fn fs(&self) -> &Arc<dyn FileSystem + Send + Sync>;
 
     fn display_path(&self) -> String {
-        let path_str = self.raw_path().to_string_lossy().to_string();
+        // Normalize to forward slashes so paths display consistently across platforms
+        // (on Windows, PathBuf uses `\` internally).
+        let path_str = self.raw_path().to_string_lossy().replace('\\', "/");
         self.fs().unstrip_protocol(&path_str)
     }
 
@@ -259,16 +318,18 @@ pub trait PathLike {
         let is_local = is_local_fs(&fs);
 
         let resolved = if is_local {
-            // Try to canonicalize for local paths
-            std::fs::canonicalize(self.raw_path()).unwrap_or_else(|_| {
-                if self.raw_path().is_absolute() {
-                    self.raw_path().clone()
-                } else {
-                    std::env::current_dir()
-                        .map(|cwd| cwd.join(self.raw_path()))
-                        .unwrap_or_else(|_| self.raw_path().clone())
-                }
-            })
+            // Try to canonicalize for local paths; strip Windows verbatim prefix `\\?\`.
+            std::fs::canonicalize(self.raw_path())
+                .map(strip_verbatim_prefix)
+                .unwrap_or_else(|_| {
+                    if self.raw_path().is_absolute() {
+                        self.raw_path().clone()
+                    } else {
+                        std::env::current_dir()
+                            .map(|cwd| cwd.join(self.raw_path()))
+                            .unwrap_or_else(|_| self.raw_path().clone())
+                    }
+                })
         } else {
             // For remote filesystems, just normalize (no local canonicalize)
             normalize_path(self.raw_path())
@@ -363,7 +424,9 @@ pub trait PathLike {
         let fs = Arc::clone(self.fs());
         let is_local = is_local_fs(&fs);
         let resolved = if is_local {
-            std::fs::canonicalize(&new_path).unwrap_or_else(|_| normalize_path(&new_path))
+            std::fs::canonicalize(&new_path)
+                .map(strip_verbatim_prefix)
+                .unwrap_or_else(|_| normalize_path(&new_path))
         } else {
             normalize_path(&new_path)
         };
@@ -844,7 +907,7 @@ mod tests {
         Arc::new(LocalFs::new())
     }
 
-    // ---- helpers ----
+    // helpers
 
     fn create_test_directory(base: &StdPath) -> PathBuf {
         let dir = base.join("directory");
@@ -887,7 +950,7 @@ mod tests {
         dir
     }
 
-    // ---- fnmatch ----
+    // fnmatch
 
     #[test]
     fn test_fnmatch_basic() {
@@ -909,7 +972,7 @@ mod tests {
         ));
     }
 
-    // ---- parse / format ----
+    // parse / format
 
     #[test]
     fn test_parse_path() {
@@ -927,7 +990,7 @@ mod tests {
         assert_eq!(format_path(StdPath::new("/tmp/test")), "file:///tmp/test");
     }
 
-    // ---- File ----
+    // File
 
     #[test]
     fn test_file_new() {
@@ -992,7 +1055,7 @@ mod tests {
         assert!(!path.exists());
     }
 
-    // ---- Directory ----
+    // Directory
 
     #[test]
     fn test_directory_new() {
@@ -1064,7 +1127,7 @@ mod tests {
         assert_eq!(d.len(), 4);
     }
 
-    // ---- hashable entries ----
+    // hashable entries
 
     #[test]
     fn test_path_hashable() {
@@ -1078,7 +1141,7 @@ mod tests {
         assert_eq!(set.len(), 64);
     }
 
-    // ---- size ----
+    // size
 
     #[test]
     fn test_directory_size() {
@@ -1091,7 +1154,7 @@ mod tests {
         assert_eq!(d.size(4096), 64 * 4096); // 262144
     }
 
-    // ---- resolve ----
+    // resolve
 
     #[test]
     fn test_file_resolve_to_directory() {
@@ -1118,7 +1181,7 @@ mod tests {
         assert!(d.resolve().is_file());
     }
 
-    // ---- match_glob ----
+    // match_glob
 
     #[test]
     fn test_match_glob_name_only() {
@@ -1145,7 +1208,7 @@ mod tests {
         assert!(!d.match_glob("*directory", false, true)); // invert
     }
 
-    // ---- all_match ----
+    // all_match
 
     #[test]
     fn test_all_match() {
@@ -1159,7 +1222,7 @@ mod tests {
         assert_eq!(d.all_match("dir*", true, false).len(), 0);
     }
 
-    // ---- rematch ----
+    // rematch
 
     #[test]
     fn test_match_re_name_only() {
@@ -1185,7 +1248,7 @@ mod tests {
         assert!(d.match_re("file://[a-zA-Z0-9/_.-]*", false, false));
     }
 
-    // ---- all_rematch ----
+    // all_rematch
 
     #[test]
     fn test_all_rematch() {
@@ -1199,7 +1262,7 @@ mod tests {
         assert_eq!(d.all_rematch("subdir[0-3]+", true, false).len(), 3);
     }
 
-    // ---- link / unlink ----
+    // link / unlink
 
     #[test]
     #[cfg(unix)]
@@ -1239,7 +1302,7 @@ mod tests {
         assert!(result.is_err());
     }
 
-    // ---- convenience (join / parent) ----
+    // convenience (join / parent)
 
     #[test]
     fn test_join_parent() {
@@ -1255,18 +1318,27 @@ mod tests {
         // f / ".." should resolve to subdir1
         let parent_entry = f.join("..");
         assert!(parent_entry.is_directory());
-        assert_eq!(parent_entry.path(), &fs::canonicalize(&subdir1).unwrap());
+        assert_eq!(
+            parent_entry.path(),
+            &strip_verbatim_prefix(fs::canonicalize(&subdir1).unwrap())
+        );
 
         // parent should also give subdir1
         assert_eq!(f.parent().path, subdir1);
 
         // f / ".." / ".." should resolve to directory
         let grandparent = f.join("..").join("..");
-        assert_eq!(grandparent.path(), &fs::canonicalize(&dir).unwrap());
+        assert_eq!(
+            grandparent.path(),
+            &strip_verbatim_prefix(fs::canonicalize(&dir).unwrap())
+        );
 
         // f / ".." / ".." / "subdir1" should equal subdir1
         let back_to_subdir1 = f.join("..").join("..").join("subdir1");
-        assert_eq!(back_to_subdir1.path(), &fs::canonicalize(&subdir1).unwrap());
+        assert_eq!(
+            back_to_subdir1.path(),
+            &strip_verbatim_prefix(fs::canonicalize(&subdir1).unwrap())
+        );
     }
 
     #[test]
@@ -1276,7 +1348,7 @@ mod tests {
         assert_eq!(d.display_path(), "file:///tmp/test");
     }
 
-    // ---- bad symlink ----
+    // bad symlink
 
     #[test]
     #[cfg(unix)]
@@ -1293,7 +1365,7 @@ mod tests {
         assert_eq!(d.size(4096), 0);
     }
 
-    // ---- OrganizeIt ----
+    // OrganizeIt
 
     #[test]
     fn test_organizeit_expand() {
@@ -1303,7 +1375,7 @@ mod tests {
         assert_eq!(d.display_path(), "file:///tmp/test");
     }
 
-    // ---- Entry equality ----
+    // Entry equality
 
     #[test]
     fn test_entry_equality() {
@@ -1315,7 +1387,7 @@ mod tests {
         assert_ne!(a, c); // different variants
     }
 
-    // ---- resolve_path ----
+    // resolve_path
 
     #[test]
     fn test_resolve_path() {
@@ -1329,7 +1401,7 @@ mod tests {
         assert!(entry.is_file());
     }
 
-    // ---- Directory rm ----
+    // Directory rm
 
     #[test]
     fn test_directory_rm() {
@@ -1347,7 +1419,7 @@ mod tests {
         assert!(!rm_dir.exists());
     }
 
-    // ---- Entry size ----
+    // Entry size
 
     #[test]
     fn test_entry_size() {
@@ -1364,7 +1436,7 @@ mod tests {
         assert_eq!(e.size(0), 5);
     }
 
-    // ---- modified ----
+    // modified
 
     #[test]
     fn test_modified() {
@@ -1379,7 +1451,7 @@ mod tests {
         assert!(mtime.elapsed().unwrap().as_secs() < 10);
     }
 
-    // ---- exists ----
+    // exists
 
     #[test]
     fn test_exists() {
