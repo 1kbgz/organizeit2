@@ -3,10 +3,10 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="API" href="api.html"><link rel="prev" title="Usage" href="usage.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Rust Implementation - organizeit2 v0.7.2</title>
+        <title>Rust - organizeit2 v0.7.2</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
@@ -196,24 +196,10 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_all/index.html">test_all</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/conftest/index.html">conftest</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_cli/index.html">test_cli</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_core/index.html">test_core</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_types/index.html">test_types</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../autoapi/organizeit2/index.html">organizeit2</a><input aria-label="Toggle navigation of organizeit2" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/organizeit2/cli/index.html">organizeit2.cli</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/organizeit2/core/index.html">organizeit2.core</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/organizeit2/types/index.html">organizeit2.types</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_cli_rm/index.html">test_cli_rm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_backends/index.html">test_backends</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_regressions/index.html">test_regressions</a></li>
-</ul>
-</li>
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Rust</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
 </div>
@@ -252,8 +238,8 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section class="tex2jax_ignore mathjax_ignore" id="rust-implementation">
-<h1>Rust Implementation<a class="headerlink" href="#rust-implementation" title="Link to this heading">¶</a></h1>
+          <section class="tex2jax_ignore mathjax_ignore" id="rust">
+<h1>Rust<a class="headerlink" href="#rust" title="Link to this heading">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">organizeit2</span></code> provides a pure-Rust implementation of the core types and operations,
 along with Python bindings via PyO3.</p>
 <section id="crate-structure">
@@ -418,15 +404,6 @@ that may yield either type (e.g. <code class="docutils literal notranslate"><spa
 </pre></div>
 </div>
 </section>
-<section id="building">
-<h2>Building<a class="headerlink" href="#building" title="Link to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>build-rs<span class="w">   </span><span class="c1"># build the Rust crate</span>
-make<span class="w"> </span>build-py<span class="w">   </span><span class="c1"># build the Python wheel (includes Rust extension)</span>
-make<span class="w"> </span>test-rs<span class="w">    </span><span class="c1"># run Rust tests</span>
-make<span class="w"> </span>test-py<span class="w">    </span><span class="c1"># run Python tests</span>
-</pre></div>
-</div>
-</section>
 </section>
 
         </article>
@@ -434,8 +411,26 @@ make<span class="w"> </span>test-py<span class="w">    </span><span class="c1">#
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="api.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">API</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="usage.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Usage</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -466,7 +461,7 @@ make<span class="w"> </span>test-py<span class="w">    </span><span class="c1">#
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Rust Implementation</a><ul>
+<li><a class="reference internal" href="#">Rust</a><ul>
 <li><a class="reference internal" href="#crate-structure">Crate structure</a></li>
 <li><a class="reference internal" href="#core-types">Core types</a><ul>
 <li><a class="reference internal" href="#file"><code class="docutils literal notranslate"><span class="pre">File</span></code></a></li>
@@ -478,7 +473,6 @@ make<span class="w"> </span>test-py<span class="w">    </span><span class="c1">#
 <li><a class="reference internal" href="#shared-trait-pathlike">Shared trait – <code class="docutils literal notranslate"><span class="pre">PathLike</span></code></a></li>
 <li><a class="reference internal" href="#utility-functions">Utility functions</a></li>
 <li><a class="reference internal" href="#python-bindings">Python bindings</a></li>
-<li><a class="reference internal" href="#building">Building</a></li>
 </ul>
 </li>
 </ul>

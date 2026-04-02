@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html">
+<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Rust" href="rust.html"><link rel="prev" title="organizeit2" href="../../index.html">
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Usage - organizeit2 v0.7.2</title>
@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -196,24 +196,10 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../autoapi/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_all/index.html">test_all</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/conftest/index.html">conftest</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_cli/index.html">test_cli</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_core/index.html">test_core</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_types/index.html">test_types</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../autoapi/organizeit2/index.html">organizeit2</a><input aria-label="Toggle navigation of organizeit2" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/organizeit2/cli/index.html">organizeit2.cli</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/organizeit2/core/index.html">organizeit2.core</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/organizeit2/types/index.html">organizeit2.types</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_cli_rm/index.html">test_cli_rm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_backends/index.html">test_backends</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../autoapi/test_regressions/index.html">test_regressions</a></li>
-</ul>
-</li>
+  <ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rust.html">Rust</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
 </div>
@@ -247,13 +233,189 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="usage">
 <h1>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>organizeit2
+</pre></div>
+</div>
+</section>
+<section id="python-library">
+<h2>Python Library<a class="headerlink" href="#python-library" title="Link to this heading">¶</a></h2>
+<section id="working-with-directories">
+<h3>Working with Directories<a class="headerlink" href="#working-with-directories" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Directory</span>
+
+<span class="c1"># Create a directory reference (supports file://, local://, or plain paths)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/myproject&quot;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/myproject&quot;</span><span class="p">)</span>
+
+<span class="c1"># List contents</span>
+<span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">ls</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># Recursive file listing</span>
+<span class="n">all_files</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">recurse</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files found&quot;</span><span class="p">)</span>
+
+<span class="c1"># Directory size (each file rounded up to block_size)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Size: </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Size (1-byte blocks): </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-files">
+<h3>Working with Files<a class="headerlink" href="#working-with-files" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/myproject/README.md&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>    <span class="c1"># &quot;README.md&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>  <span class="c1"># &quot;.md&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>    <span class="c1"># &quot;README&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>  <span class="c1"># Directory for /tmp/myproject</span>
+</pre></div>
+</div>
+</section>
+<section id="path-resolution">
+<h3>Path Resolution<a class="headerlink" href="#path-resolution" title="Link to this heading">¶</a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">Path</span></code> to auto-detect whether a path is a file or directory:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">entry</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/myproject&quot;</span><span class="p">)</span>
+<span class="c1"># Returns a Directory if the path is a directory, File otherwise</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">resolve()</span></code> to canonicalize and detect the type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/myproject&quot;</span><span class="p">)</span>
+<span class="n">resolved</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>  <span class="c1"># Returns Directory if path is actually a directory</span>
+</pre></div>
+</div>
+</section>
+<section id="glob-matching">
+<h3>Glob Matching<a class="headerlink" href="#glob-matching" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Directory</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/myproject/&quot;</span><span class="p">)</span>
+
+<span class="c1"># Match the directory name itself</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;myproject*&quot;</span><span class="p">)</span>                         <span class="c1"># True</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;other*&quot;</span><span class="p">)</span>                             <span class="c1"># False</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;*myproject*&quot;</span><span class="p">,</span> <span class="n">name_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>       <span class="c1"># Match against full path</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;myproject*&quot;</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>            <span class="c1"># Inverted match</span>
+
+<span class="c1"># Match children</span>
+<span class="n">txt_files</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_match</span><span class="p">(</span><span class="s2">&quot;*.txt&quot;</span><span class="p">)</span>
+<span class="n">non_txt</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_match</span><span class="p">(</span><span class="s2">&quot;*.txt&quot;</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="regex-matching">
+<h3>Regex Matching<a class="headerlink" href="#regex-matching" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;myproject&quot;</span><span class="p">)</span>                        <span class="c1"># Anchored at start like re.match</span>
+<span class="n">d</span><span class="o">.</span><span class="n">rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;file://.*myproject&quot;</span><span class="p">,</span> <span class="n">name_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Match children with regex</span>
+<span class="n">numbered</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;file[0-9]+\.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="symlinks">
+<h3>Symlinks<a class="headerlink" href="#symlinks" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Directory</span>
+
+<span class="n">src</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/source&quot;</span><span class="p">)</span>
+<span class="n">dst</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/link_target&quot;</span><span class="p">)</span>
+<span class="n">src</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>        <span class="c1"># Create symlink</span>
+<span class="n">dst</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>         <span class="c1"># Remove symlink</span>
+</pre></div>
+</div>
+</section>
+<section id="path-navigation">
+<h3>Path Navigation<a class="headerlink" href="#path-navigation" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/project/src/main.py&quot;</span><span class="p">)</span>
+
+<span class="c1"># Navigate with /</span>
+<span class="n">parent</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+<span class="n">sibling</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;utils.py&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+
+<span class="c1"># Properties</span>
+<span class="n">f</span><span class="o">.</span><span class="n">parent</span>             <span class="c1"># Directory for /tmp/project/src</span>
+<span class="n">f</span><span class="o">.</span><span class="n">parts</span>              <span class="c1"># [&#39;/&#39;, &#39;tmp&#39;, &#39;project&#39;, &#39;src&#39;, &#39;main.py&#39;]</span>
+</pre></div>
+</div>
+</section>
+<section id="organizeit">
+<h3>OrganizeIt<a class="headerlink" href="#organizeit" title="Link to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrganizeIt</span>
+
+<span class="n">oi</span> <span class="o">=</span> <span class="n">OrganizeIt</span><span class="p">()</span>                              <span class="c1"># Uses local filesystem</span>
+<span class="n">oi</span> <span class="o">=</span> <span class="n">OrganizeIt</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="s2">&quot;local:///tmp/data&quot;</span><span class="p">)</span>        <span class="c1"># Explicit filesystem</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">oi</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="s2">&quot;/tmp/data&quot;</span><span class="p">)</span>                     <span class="c1"># Returns a Directory</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="cli">
+<h2>CLI<a class="headerlink" href="#cli" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">organizeit2</span></code> provides a command-line interface via <code class="docutils literal notranslate"><span class="pre">oi2</span></code>.</p>
+<section id="match-glob">
+<h3>Match (glob)<a class="headerlink" href="#match-glob" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check if a path matches a glob pattern</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;subdir*&quot;</span>
+
+<span class="c1"># Inverted match (show unmatched)</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;*.log&quot;</span><span class="w"> </span>--invert
+
+<span class="c1"># List unmatched paths</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;*.py&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--list
+
+<span class="c1"># Full path matching (not just name)</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;*src*main*&quot;</span><span class="w"> </span>--no-name-only
+</pre></div>
+</div>
+</section>
+<section id="match-with-regex">
+<h3>Match with regex<a class="headerlink" href="#match-with-regex" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;subdir[0-9]+&quot;</span>
+oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;file://.*&quot;</span><span class="w"> </span>--no-name-only
+</pre></div>
+</div>
+</section>
+<section id="sorting-and-limiting">
+<h3>Sorting and Limiting<a class="headerlink" href="#sorting-and-limiting" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Oldest 5 unmatched files</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;*.keep&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>age<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
+
+<span class="c1"># Largest files, descending</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;*.keep&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">10</span>
+
+<span class="c1"># Keep newest 7, show the rest</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;*&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>age<span class="w"> </span>--leaves<span class="w"> </span><span class="m">7</span>
+</pre></div>
+</div>
+</section>
+<section id="operations">
+<h3>Operations<a class="headerlink" href="#operations" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dry run — print what would be removed</span>
+oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;.*&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span><span class="w"> </span>--op<span class="w"> </span>rm<span class="w"> </span>--dry-run
+
+<span class="c1"># Actually remove</span>
+oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;.*&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span><span class="w"> </span>--op<span class="w"> </span>rm
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
         </article>
@@ -261,8 +423,26 @@
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="rust.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Rust</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../../index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -281,8 +461,45 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Usage</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#python-library">Python Library</a><ul>
+<li><a class="reference internal" href="#working-with-directories">Working with Directories</a></li>
+<li><a class="reference internal" href="#working-with-files">Working with Files</a></li>
+<li><a class="reference internal" href="#path-resolution">Path Resolution</a></li>
+<li><a class="reference internal" href="#glob-matching">Glob Matching</a></li>
+<li><a class="reference internal" href="#regex-matching">Regex Matching</a></li>
+<li><a class="reference internal" href="#symlinks">Symlinks</a></li>
+<li><a class="reference internal" href="#path-navigation">Path Navigation</a></li>
+<li><a class="reference internal" href="#organizeit">OrganizeIt</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cli">CLI</a><ul>
+<li><a class="reference internal" href="#match-glob">Match (glob)</a></li>
+<li><a class="reference internal" href="#match-with-regex">Match with regex</a></li>
+<li><a class="reference internal" href="#sorting-and-limiting">Sorting and Limiting</a></li>
+<li><a class="reference internal" href="#operations">Operations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

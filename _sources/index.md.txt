@@ -7,6 +7,12 @@ hidden: true
 
 
 
+docs/src/usage.md
+
+docs/src/rust.md
+
+docs/src/api.md
+
 
 ```
 
