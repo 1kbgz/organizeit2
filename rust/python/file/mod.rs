@@ -1,11 +1,15 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 
+use std::path::PathBuf;
+use std::sync::Arc;
+
 use ::organizeit2::PathLike;
 
 use ::organizeit2::File as BaseFile;
 
 use super::entry_to_pyobject;
+use super::PyFsspecFileSystem;
 
 #[pyclass(from_py_object)]
 #[derive(Clone)]
@@ -17,9 +21,19 @@ pub struct File {
 impl File {
     #[new]
     #[pyo3(signature = (path))]
-    fn new(path: String) -> Self {
-        File {
-            inner: BaseFile::new(&path),
+    fn new(path: String) -> PyResult<Self> {
+        match BaseFile::new(&path) {
+            Ok(inner) => Ok(File { inner }),
+            Err(_) => {
+                // Fallback: try Python fsspec for unknown protocols
+                let (fs, stripped) = PyFsspecFileSystem::from_url(&path)?;
+                let filesystem = Arc::new(fs) as Arc<dyn fsspec_rs::FileSystem + Send + Sync>;
+                let inner = BaseFile {
+                    path: PathBuf::from(&stripped),
+                    filesystem,
+                };
+                Ok(File { inner })
+            }
         }
     }
 
@@ -136,7 +150,7 @@ impl File {
     fn size(&self, block_size: u64) -> PyResult<u64> {
         self.inner
             .size(block_size)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyOSError, _>(e.to_string()))
+            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyOSError, _>("could not determine file size"))
     }
 
     fn __truediv__<'py>(&self, py: Python<'py>, other: String) -> PyResult<Py<PyAny>> {

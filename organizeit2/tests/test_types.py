@@ -1,27 +1,21 @@
-from pathlib import Path as BasePath
+import sys
 
 import pytest
-from fsspec import AbstractFileSystem
-from fsspec_pydantic import DirectoryPath
 
 from organizeit2 import Directory, File, OrganizeIt, Path
 
 
 class TestTypes:
     def test_oit2(self, tempdir):
-        oi = OrganizeIt(fs=f"local://{tempdir}")
+        oi = OrganizeIt()
         expected = f"file://{tempdir.replace(chr(92), '/')}"
         assert str(oi.expand(tempdir)) == expected
 
     def test_directory(self, tempdir):
         d = Directory(path=f"local://{tempdir}")
-        assert isinstance(d.path.fs, AbstractFileSystem)
-        assert isinstance(d.path.path, BasePath)
         expected_path = f"file://{tempdir.replace(chr(92), '/')}"
-        assert d.model_dump_json() == f'{{"path":"{expected_path}","type_":"organizeit2.types.Directory"}}'
         assert repr(d) == f"Directory(path={expected_path})"
         assert str(d) == expected_path
-        assert str(d.path) == expected_path
 
     def test_directory_file_resolve(self, directory_str):
         assert isinstance(File(path=directory_str).resolve(), Directory)
@@ -29,8 +23,8 @@ class TestTypes:
         assert isinstance(Directory(path=f"file://{__file__}").resolve(), File)
         assert isinstance(Path(path=f"file://{__file__}").resolve(), File)
 
-    def test_directory_from_directorypath(self):
-        Directory(path=DirectoryPath("local:///tmp"))
+    def test_directory_from_string(self):
+        Directory(path="/tmp")
 
     def test_directory_ls(self, directory_str):
         d = Directory(path=directory_str)
@@ -54,6 +48,7 @@ class TestTypes:
         d = Directory(path=directory_str)
         assert d.size() == 262144
 
+    @pytest.mark.skipif(sys.platform == "win32", reason="Symlinks require elevated privileges on Windows")
     def test_link(self, directory_str):
         d = Directory(path=directory_str)
         d2 = Directory(path=f"{directory_str}_link")
