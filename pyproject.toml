@@ -99,13 +99,8 @@ search = 'version = "{current_version}"'
 replace = 'version = "{new_version}"'
 
 [tool.cibuildwheel]
-<<<<<<< before updating
 build = "cp310-*"
 test-command = "echo 'TODO'"
-=======
-build = "cp311-*"
-test-command = "pytest -vvv {project}/organizeit2/tests"
->>>>>>> after updating
 test-extras = "develop"
 
 [tool.cibuildwheel.linux]
