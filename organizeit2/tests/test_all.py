@@ -1,4 +1,4 @@
-from organizeit2 import *  # noqa
+from organizeit2 import *
 
 
 def test_all():
