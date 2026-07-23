@@ -46,12 +46,12 @@ def _internal(
     invert: bool = False,
     size: bool = False,
     modified: bool = False,
-    limit: int = None,
-    leaves: int = None,
-    by: str = None,
+    limit: int | None = None,
+    leaves: int | None = None,
+    by: str | None = None,
     desc: bool = False,
     block_size: int = 0,
-    op: str = None,
+    op: str | None = None,
     dry_run: bool = False,
     ignore_errors: bool = False,
     retries: int = 1,
@@ -113,18 +113,18 @@ def _internal(
                     for _ in intersection:
                         try:
                             __ = print(f"rm {_.as_posix()}") if dry_run else _.rm()
-                        except Exception as e:
+                        except Exception:
                             errors += 1
                             if retries <= 0 and not ignore_errors:
-                                raise e
+                                raise
                 case "touch":
                     for _ in intersection:
                         try:
                             __ = print(f"touch {_.as_posix()}") if dry_run else _.touch()
-                        except Exception as e:
+                        except Exception:
                             errors += 1
                             if retries <= 0 and not ignore_errors:
-                                raise e
+                                raise
                 case _:
                     raise NotImplementedError(f"Op {op} not implemented")
             if errors > 0 and not ignore_errors and retries > 0:
@@ -159,9 +159,9 @@ def match(
     invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
     size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
     modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
-    limit: Annotated[int, Option("--limit")] = None,
-    leaves: Annotated[int, Option("--leaves")] = None,
-    by: Annotated[str, Option("--by")] = None,
+    limit: Annotated[int | None, Option("--limit")] = None,
+    leaves: Annotated[int | None, Option("--leaves")] = None,
+    by: Annotated[str | None, Option("--by")] = None,
     desc: Annotated[bool, Option("--desc")] = False,
     block_size: Annotated[int, Option("--block-size")] = 0,
     op: Annotated[OpType, Option("--op")] = None,
@@ -199,9 +199,9 @@ def rematch(
     invert: Annotated[bool, Option("--invert/--no-invert", "-i/-I")] = False,
     size: Annotated[bool, Option("--size/--no-size", "-s/-S")] = False,
     modified: Annotated[bool, Option("--modified/--no-modified", "-m/-M")] = False,
-    limit: Annotated[int, Option("--limit")] = None,
-    leaves: Annotated[int, Option("--leaves")] = None,
-    by: Annotated[str, Option("--by")] = None,
+    limit: Annotated[int | None, Option("--limit")] = None,
+    leaves: Annotated[int | None, Option("--leaves")] = None,
+    by: Annotated[str | None, Option("--by")] = None,
     desc: Annotated[bool, Option("--desc")] = False,
     block_size: Annotated[int, Option("--block-size")] = 0,
     op: Annotated[OpType, Option("--op")] = None,
