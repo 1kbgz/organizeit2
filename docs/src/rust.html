@@ -269,10 +269,10 @@ along with Python bindings via PyO3.</p>
 <p>Represents a file on the local filesystem.</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">organizeit2</span><span class="p">::{</span><span class="n">File</span><span class="p">,</span><span class="w"> </span><span class="n">PathLike</span><span class="p">};</span>
 
-<span class="kd">let</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;file:///tmp/data.csv&quot;</span><span class="p">);</span>
-<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">name</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;data.csv&quot;</span><span class="p">);</span>
-<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">suffix</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;.csv&quot;</span><span class="p">);</span>
-<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">stem</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;data&quot;</span><span class="p">);</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">File</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">"file:///tmp/data.csv"</span><span class="p">);</span>
+<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">name</span><span class="p">(),</span><span class="w"> </span><span class="s">"data.csv"</span><span class="p">);</span>
+<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">suffix</span><span class="p">(),</span><span class="w"> </span><span class="s">".csv"</span><span class="p">);</span>
+<span class="fm">assert_eq!</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">stem</span><span class="p">(),</span><span class="w"> </span><span class="s">"data"</span><span class="p">);</span>
 </pre></div>
 </div>
 </section>
@@ -281,9 +281,9 @@ along with Python bindings via PyO3.</p>
 <p>Represents a directory on the local filesystem.</p>
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">organizeit2</span><span class="p">::{</span><span class="n">Directory</span><span class="p">,</span><span class="w"> </span><span class="n">PathLike</span><span class="p">};</span>
 
-<span class="kd">let</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Directory</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;file:///tmp/mydir&quot;</span><span class="p">);</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Directory</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">"file:///tmp/mydir"</span><span class="p">);</span>
 <span class="k">for</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">ls</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">entry</span><span class="p">);</span>
+<span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">"{}"</span><span class="p">,</span><span class="w"> </span><span class="n">entry</span><span class="p">);</span>
 <span class="p">}</span>
 <span class="c1">// Recursive file listing</span>
 <span class="kd">let</span><span class="w"> </span><span class="n">all_files</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">.</span><span class="n">recurse</span><span class="p">();</span>
@@ -301,7 +301,7 @@ that may yield either type (e.g. <code class="docutils literal notranslate"><spa
 <div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">organizeit2</span><span class="p">::</span><span class="n">OrganizeIt</span><span class="p">;</span>
 
 <span class="kd">let</span><span class="w"> </span><span class="n">oi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OrganizeIt</span><span class="p">::</span><span class="n">new</span><span class="p">();</span>
-<span class="kd">let</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">oi</span><span class="p">.</span><span class="n">expand</span><span class="p">(</span><span class="s">&quot;/tmp/mydir&quot;</span><span class="p">);</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">oi</span><span class="p">.</span><span class="n">expand</span><span class="p">(</span><span class="s">"/tmp/mydir"</span><span class="p">);</span>
 </pre></div>
 </div>
 </section>
@@ -398,7 +398,7 @@ that may yield either type (e.g. <code class="docutils literal notranslate"><spa
 <code class="docutils literal notranslate"><span class="pre">Path</span></code> factory function with the same API as the pure-Python types.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Directory</span><span class="p">,</span> <span class="n">File</span><span class="p">,</span> <span class="n">OrganizeIt</span>
 
-<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/mydir&quot;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"/tmp/mydir"</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">ls</span><span class="p">():</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
 </pre></div>

@@ -253,8 +253,8 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Directory</span>
 
 <span class="c1"># Create a directory reference (supports file://, local://, or plain paths)</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/myproject&quot;</span><span class="p">)</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/myproject&quot;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"file:///tmp/myproject"</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"/tmp/myproject"</span><span class="p">)</span>
 
 <span class="c1"># List contents</span>
 <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">ls</span><span class="p">():</span>
@@ -262,11 +262,11 @@
 
 <span class="c1"># Recursive file listing</span>
 <span class="n">all_files</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">recurse</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files found&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> files found"</span><span class="p">)</span>
 
 <span class="c1"># Directory size (each file rounded up to block_size)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Size: </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Size (1-byte blocks): </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Size: </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="si">}</span><span class="s2"> bytes"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Size (1-byte blocks): </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2"> bytes"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -274,10 +274,10 @@
 <h3>Working with Files<a class="headerlink" href="#working-with-files" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
 
-<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/myproject/README.md&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>    <span class="c1"># &quot;README.md&quot;</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>  <span class="c1"># &quot;.md&quot;</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>    <span class="c1"># &quot;README&quot;</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"file:///tmp/myproject/README.md"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>    <span class="c1"># "README.md"</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>  <span class="c1"># ".md"</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">stem</span><span class="p">)</span>    <span class="c1"># "README"</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>  <span class="c1"># Directory for /tmp/myproject</span>
 </pre></div>
 </div>
@@ -287,14 +287,14 @@
 <p>Use <code class="docutils literal notranslate"><span class="pre">Path</span></code> to auto-detect whether a path is a file or directory:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="n">entry</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/myproject&quot;</span><span class="p">)</span>
+<span class="n">entry</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"/tmp/myproject"</span><span class="p">)</span>
 <span class="c1"># Returns a Directory if the path is a directory, File otherwise</span>
 </pre></div>
 </div>
 <p>Use <code class="docutils literal notranslate"><span class="pre">resolve()</span></code> to canonicalize and detect the type:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
 
-<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/myproject&quot;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"file:///tmp/myproject"</span><span class="p">)</span>
 <span class="n">resolved</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>  <span class="c1"># Returns Directory if path is actually a directory</span>
 </pre></div>
 </div>
@@ -303,27 +303,27 @@
 <h3>Glob Matching<a class="headerlink" href="#glob-matching" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Directory</span>
 
-<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/myproject/&quot;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"/tmp/myproject/"</span><span class="p">)</span>
 
 <span class="c1"># Match the directory name itself</span>
-<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;myproject*&quot;</span><span class="p">)</span>                         <span class="c1"># True</span>
-<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;other*&quot;</span><span class="p">)</span>                             <span class="c1"># False</span>
-<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;*myproject*&quot;</span><span class="p">,</span> <span class="n">name_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>       <span class="c1"># Match against full path</span>
-<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;myproject*&quot;</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>            <span class="c1"># Inverted match</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">"myproject*"</span><span class="p">)</span>                         <span class="c1"># True</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">"other*"</span><span class="p">)</span>                             <span class="c1"># False</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">"*myproject*"</span><span class="p">,</span> <span class="n">name_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>       <span class="c1"># Match against full path</span>
+<span class="n">d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">"myproject*"</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>            <span class="c1"># Inverted match</span>
 
 <span class="c1"># Match children</span>
-<span class="n">txt_files</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_match</span><span class="p">(</span><span class="s2">&quot;*.txt&quot;</span><span class="p">)</span>
-<span class="n">non_txt</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_match</span><span class="p">(</span><span class="s2">&quot;*.txt&quot;</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">txt_files</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_match</span><span class="p">(</span><span class="s2">"*.txt"</span><span class="p">)</span>
+<span class="n">non_txt</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_match</span><span class="p">(</span><span class="s2">"*.txt"</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="regex-matching">
 <h3>Regex Matching<a class="headerlink" href="#regex-matching" title="Link to this heading">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;myproject&quot;</span><span class="p">)</span>                        <span class="c1"># Anchored at start like re.match</span>
-<span class="n">d</span><span class="o">.</span><span class="n">rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;file://.*myproject&quot;</span><span class="p">,</span> <span class="n">name_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">d</span><span class="o">.</span><span class="n">rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"myproject"</span><span class="p">)</span>                        <span class="c1"># Anchored at start like re.match</span>
+<span class="n">d</span><span class="o">.</span><span class="n">rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"file://.*myproject"</span><span class="p">,</span> <span class="n">name_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
 <span class="c1"># Match children with regex</span>
-<span class="n">numbered</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;file[0-9]+\.txt&quot;</span><span class="p">)</span>
+<span class="n">numbered</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">all_rematch</span><span class="p">(</span><span class="sa">r</span><span class="s2">"file[0-9]+\.txt"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -331,8 +331,8 @@
 <h3>Symlinks<a class="headerlink" href="#symlinks" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Directory</span>
 
-<span class="n">src</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/source&quot;</span><span class="p">)</span>
-<span class="n">dst</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;/tmp/link_target&quot;</span><span class="p">)</span>
+<span class="n">src</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"/tmp/source"</span><span class="p">)</span>
+<span class="n">dst</span> <span class="o">=</span> <span class="n">Directory</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"/tmp/link_target"</span><span class="p">)</span>
 <span class="n">src</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">dst</span><span class="p">)</span>        <span class="c1"># Create symlink</span>
 <span class="n">dst</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>         <span class="c1"># Remove symlink</span>
 </pre></div>
@@ -342,15 +342,15 @@
 <h3>Path Navigation<a class="headerlink" href="#path-navigation" title="Link to this heading">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">File</span>
 
-<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;file:///tmp/project/src/main.py&quot;</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">"file:///tmp/project/src/main.py"</span><span class="p">)</span>
 
 <span class="c1"># Navigate with /</span>
-<span class="n">parent</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-<span class="n">sibling</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="s2">&quot;..&quot;</span> <span class="o">/</span> <span class="s2">&quot;utils.py&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+<span class="n">parent</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="s2">".."</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+<span class="n">sibling</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="s2">".."</span> <span class="o">/</span> <span class="s2">"utils.py"</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
 
 <span class="c1"># Properties</span>
 <span class="n">f</span><span class="o">.</span><span class="n">parent</span>             <span class="c1"># Directory for /tmp/project/src</span>
-<span class="n">f</span><span class="o">.</span><span class="n">parts</span>              <span class="c1"># [&#39;/&#39;, &#39;tmp&#39;, &#39;project&#39;, &#39;src&#39;, &#39;main.py&#39;]</span>
+<span class="n">f</span><span class="o">.</span><span class="n">parts</span>              <span class="c1"># ['/', 'tmp', 'project', 'src', 'main.py']</span>
 </pre></div>
 </div>
 </section>
@@ -359,9 +359,9 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">organizeit2</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrganizeIt</span>
 
 <span class="n">oi</span> <span class="o">=</span> <span class="n">OrganizeIt</span><span class="p">()</span>                              <span class="c1"># Uses local filesystem</span>
-<span class="n">oi</span> <span class="o">=</span> <span class="n">OrganizeIt</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="s2">&quot;local:///tmp/data&quot;</span><span class="p">)</span>        <span class="c1"># Explicit filesystem</span>
+<span class="n">oi</span> <span class="o">=</span> <span class="n">OrganizeIt</span><span class="p">(</span><span class="n">fs</span><span class="o">=</span><span class="s2">"local:///tmp/data"</span><span class="p">)</span>        <span class="c1"># Explicit filesystem</span>
 
-<span class="n">d</span> <span class="o">=</span> <span class="n">oi</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="s2">&quot;/tmp/data&quot;</span><span class="p">)</span>                     <span class="c1"># Returns a Directory</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">oi</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="s2">"/tmp/data"</span><span class="p">)</span>                     <span class="c1"># Returns a Directory</span>
 </pre></div>
 </div>
 </section>
@@ -372,46 +372,46 @@
 <section id="match-glob">
 <h3>Match (glob)<a class="headerlink" href="#match-glob" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check if a path matches a glob pattern</span>
-oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;subdir*&quot;</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">"subdir*"</span>
 
 <span class="c1"># Inverted match (show unmatched)</span>
-oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;*.log&quot;</span><span class="w"> </span>--invert
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">"*.log"</span><span class="w"> </span>--invert
 
 <span class="c1"># List unmatched paths</span>
-oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;*.py&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--list
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">"*.py"</span><span class="w"> </span>--invert<span class="w"> </span>--list
 
 <span class="c1"># Full path matching (not just name)</span>
-oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;*src*main*&quot;</span><span class="w"> </span>--no-name-only
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">"*src*main*"</span><span class="w"> </span>--no-name-only
 </pre></div>
 </div>
 </section>
 <section id="match-with-regex">
 <h3>Match with regex<a class="headerlink" href="#match-with-regex" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;subdir[0-9]+&quot;</span>
-oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">&quot;file://.*&quot;</span><span class="w"> </span>--no-name-only
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">"subdir[0-9]+"</span>
+oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/myproject/<span class="w"> </span><span class="s2">"file://.*"</span><span class="w"> </span>--no-name-only
 </pre></div>
 </div>
 </section>
 <section id="sorting-and-limiting">
 <h3>Sorting and Limiting<a class="headerlink" href="#sorting-and-limiting" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Oldest 5 unmatched files</span>
-oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;*.keep&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>age<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">"*.keep"</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>age<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span>
 
 <span class="c1"># Largest files, descending</span>
-oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;*.keep&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">10</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">"*.keep"</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">10</span>
 
 <span class="c1"># Keep newest 7, show the rest</span>
-oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;*&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>age<span class="w"> </span>--leaves<span class="w"> </span><span class="m">7</span>
+oi2<span class="w"> </span>match<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">"*"</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>age<span class="w"> </span>--leaves<span class="w"> </span><span class="m">7</span>
 </pre></div>
 </div>
 </section>
 <section id="operations">
 <h3>Operations<a class="headerlink" href="#operations" title="Link to this heading">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dry run — print what would be removed</span>
-oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;.*&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span><span class="w"> </span>--op<span class="w"> </span>rm<span class="w"> </span>--dry-run
+oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">".*"</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span><span class="w"> </span>--op<span class="w"> </span>rm<span class="w"> </span>--dry-run
 
 <span class="c1"># Actually remove</span>
-oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">&quot;.*&quot;</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span><span class="w"> </span>--op<span class="w"> </span>rm
+oi2<span class="w"> </span>rematch<span class="w"> </span>/tmp/data/<span class="w"> </span><span class="s2">".*"</span><span class="w"> </span>--invert<span class="w"> </span>--by<span class="w"> </span>size<span class="w"> </span>--desc<span class="w"> </span>--limit<span class="w"> </span><span class="m">5</span><span class="w"> </span>--op<span class="w"> </span>rm
 </pre></div>
 </div>
 </section>
