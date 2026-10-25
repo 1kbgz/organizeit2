@@ -3,7 +3,7 @@ from unittest.mock import patch
 from typer import Exit
 from typer.testing import CliRunner
 
-from organizeit2.cli import main, match, rematch
+from organizeit2.cli import OpType, main, match, rematch
 
 runner = CliRunner()
 
@@ -183,7 +183,7 @@ def test_rematch_op_touch(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli.print") as print_mock:
         try:
-            rematch(directory_str, ".*", list=False, limit=5, invert=True, by="size", desc=True, op="touch", dry_run=True)
+            rematch(directory_str, ".*", list=False, limit=5, invert=True, by="size", desc=True, op=OpType.touch, dry_run=True)
         except Exit:
             pass
         assert print_mock.call_count == 5
@@ -195,7 +195,7 @@ def test_rematch_op_rm(directory_str):
     directory_str = directory_str + "/subdir1/"
     with patch("organizeit2.cli.print") as print_mock:
         try:
-            rematch(directory_str, ".*", list=False, limit=5, invert=True, by="size", desc=True, op="rm", dry_run=True)
+            rematch(directory_str, ".*", list=False, limit=5, invert=True, by="size", desc=True, op=OpType.rm, dry_run=True)
         except Exit:
             pass
         assert print_mock.call_count == 5
