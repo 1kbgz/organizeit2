@@ -49,7 +49,7 @@ develop = [
     "hatch-rs",
     "hatchling",
     "mdformat",
-    "mdformat-frontmatter",
+    "mdformat-myst",
     "mdformat-tables>=1",
     "pytest",
     "pytest-cov",
@@ -106,8 +106,7 @@ replace = 'version = "{new_version}"'
 
 [tool.cibuildwheel]
 build = "cp310-*"
-test-command = "echo 'TODO'"
-test-extras = "develop"
+test-command = "python -c \"import organizeit2\""
 
 [tool.cibuildwheel.linux]
 before-all = """
