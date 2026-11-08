@@ -20,6 +20,3 @@ regex = "1"
 [dev-dependencies]
 tempfile = "3"
 
-[profile.test.junit]
-path = "junit.xml"
-
