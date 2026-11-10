@@ -14,7 +14,7 @@ path = "src/lib.rs"
 crate-type = ["rlib"]
 
 [dependencies]
-fsspec_rs = "0.1.0"
+fsspec_rs = "0.1.8"
 regex = "1"
 
 [dev-dependencies]
