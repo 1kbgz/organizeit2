@@ -83,9 +83,9 @@ fn normalize_path(path: &StdPath) -> PathBuf {
 }
 
 /// Detect protocol from a path string and return the appropriate filesystem.
-/// Handles local (`file://`, `local://`, bare paths) and S3 (`s3://`) natively.
-/// Returns `Err` for unknown protocols; callers (e.g. PyO3 bindings) can fall back to
-/// a Python fsspec backend.
+/// Local paths and S3 get their options here; other protocols resolve through whatever the
+/// registry holds. Returns `Err` for protocols nothing registers; callers (e.g. PyO3
+/// bindings) can fall back to a Python fsspec backend.
 ///
 /// Filesystems come from the fsspec-rs registry, which caches instances so that many
 /// `File`/`Directory` objects sharing the same protocol and credentials reuse a single
@@ -139,7 +139,11 @@ pub fn fs_for_path(path: &str) -> Result<Arc<dyn FileSystem + Send + Sync>, Stri
                 .map(|(fs, _)| fs)
                 .map_err(|e| format!("Failed to create S3 filesystem: {e}"))
         }
-        _ => Err(format!("Unsupported protocol: {protocol}://")),
+        // Any other protocol registered in the process, such as one from another extension
+        // sharing libfsspec.
+        _ => url_to_fs(path, &FsOptions::new())
+            .map(|(fs, _)| fs)
+            .map_err(|e| format!("Unsupported protocol: {protocol}:// ({e})")),
     }
 }
 
