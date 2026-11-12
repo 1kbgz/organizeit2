@@ -1,13 +1,12 @@
 use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::io;
 use std::path::{Path as StdPath, PathBuf};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::Arc;
 use std::time::SystemTime;
 
-use fsspec_rs::{FileSystem, FileType, LocalFs, S3Config, S3Fs};
+use fsspec_rs::{url_to_fs, FileSystem, FileType, FsOptions, LocalFs};
 use regex::Regex;
 
 // =========================================================================
@@ -84,27 +83,20 @@ fn normalize_path(path: &StdPath) -> PathBuf {
 }
 
 /// Detect protocol from a path string and return the appropriate filesystem.
-/// Handles local (`file://`, `local://`, bare paths) and S3 (`s3://`) natively.
-/// Returns `Err` for unknown protocols; callers (e.g. PyO3 bindings) can fall back to
-/// a Python fsspec backend.
+/// Local paths and S3 get their options here; other protocols resolve through whatever the
+/// registry holds. Returns `Err` for protocols nothing registers; callers (e.g. PyO3
+/// bindings) can fall back to a Python fsspec backend.
 ///
-/// Filesystem instances are cached globally so that many `File`/`Directory` objects
-/// sharing the same protocol and credentials reuse a single connection pool rather than
-/// each opening their own, which would exhaust OS file descriptors.
-static LOCAL_FS_INSTANCE: OnceLock<Arc<dyn FileSystem + Send + Sync>> = OnceLock::new();
-static S3_FS_CACHE: OnceLock<Mutex<HashMap<String, Arc<dyn FileSystem + Send + Sync>>>> =
-    OnceLock::new();
-
-fn s3_fs_cache() -> &'static Mutex<HashMap<String, Arc<dyn FileSystem + Send + Sync>>> {
-    S3_FS_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
-}
-
+/// Filesystems come from the fsspec-rs registry, which caches instances so that many
+/// `File`/`Directory` objects sharing the same protocol and credentials reuse a single
+/// connection pool rather than each opening their own, which would exhaust OS file
+/// descriptors.
 pub fn fs_for_path(path: &str) -> Result<Arc<dyn FileSystem + Send + Sync>, String> {
     let (protocol, rest) = extract_protocol(path);
     match protocol {
-        "file" | "local" => Ok(Arc::clone(
-            LOCAL_FS_INSTANCE.get_or_init(|| Arc::new(LocalFs::new())),
-        )),
+        "file" | "local" => url_to_fs(path, &FsOptions::new())
+            .map(|(fs, _)| fs)
+            .map_err(|e| format!("Failed to create local filesystem: {e}")),
         "s3" => {
             // Extract bucket name from the first path component
             let trimmed = rest.trim_start_matches('/');
@@ -115,55 +107,43 @@ pub fn fs_for_path(path: &str) -> Result<Arc<dyn FileSystem + Send + Sync>, Stri
             // Helper: read env var, treating empty as unset
             let env_non_empty =
                 |key: &str| -> Option<String> { std::env::var(key).ok().filter(|v| !v.is_empty()) };
-            let endpoint_url = env_non_empty("FSSPEC_S3_ENDPOINT_URL")
-                .or_else(|| env_non_empty("AWS_ENDPOINT_URL"));
-            let access_key_id =
-                env_non_empty("AWS_ACCESS_KEY_ID").or_else(|| env_non_empty("FSSPEC_S3_KEY"));
-            let secret_access_key = env_non_empty("AWS_SECRET_ACCESS_KEY")
-                .or_else(|| env_non_empty("FSSPEC_S3_SECRET"));
-            let session_token = env_non_empty("AWS_SESSION_TOKEN");
-            let region =
-                env_non_empty("AWS_REGION").or_else(|| env_non_empty("AWS_DEFAULT_REGION"));
-            let anon = access_key_id.is_none() && secret_access_key.is_none();
-
-            // Cache key uniquely identifies a (bucket × credentials × endpoint) combination.
-            let cache_key = format!(
-                "s3:{}:{}:{}:{}:{}:{}",
-                bucket,
-                endpoint_url.as_deref().unwrap_or(""),
-                access_key_id.as_deref().unwrap_or(""),
-                session_token.as_deref().unwrap_or(""),
-                region.as_deref().unwrap_or(""),
-                anon,
-            );
-
-            {
-                let cache = s3_fs_cache().lock().unwrap();
-                if let Some(fs) = cache.get(&cache_key) {
-                    return Ok(Arc::clone(fs));
+            let mut options = FsOptions::new();
+            let mut set = |key: &str, value: Option<String>| {
+                if let Some(value) = value {
+                    options.insert(key.to_string(), value);
                 }
-            }
-
-            let cfg = S3Config {
-                bucket: bucket.to_string(),
-                endpoint_url,
-                access_key_id,
-                secret_access_key,
-                session_token,
-                region,
-                anon,
-                virtual_hosted_style_request: false,
             };
-            let fs = S3Fs::new(cfg)
-                .map(|fs| Arc::new(fs) as Arc<dyn FileSystem + Send + Sync>)
-                .map_err(|e| format!("Failed to create S3 filesystem: {e}"))?;
-            s3_fs_cache()
-                .lock()
-                .unwrap()
-                .insert(cache_key, Arc::clone(&fs));
-            Ok(fs)
+            set(
+                "endpoint_url",
+                env_non_empty("FSSPEC_S3_ENDPOINT_URL")
+                    .or_else(|| env_non_empty("AWS_ENDPOINT_URL")),
+            );
+            set(
+                "key",
+                env_non_empty("AWS_ACCESS_KEY_ID").or_else(|| env_non_empty("FSSPEC_S3_KEY")),
+            );
+            set(
+                "secret",
+                env_non_empty("AWS_SECRET_ACCESS_KEY")
+                    .or_else(|| env_non_empty("FSSPEC_S3_SECRET")),
+            );
+            set("token", env_non_empty("AWS_SESSION_TOKEN"));
+            set(
+                "region",
+                env_non_empty("AWS_REGION").or_else(|| env_non_empty("AWS_DEFAULT_REGION")),
+            );
+            let anon = !options.contains_key("key") && !options.contains_key("secret");
+            options.insert("anon".to_string(), anon.to_string());
+
+            url_to_fs(&format!("s3://{trimmed}"), &options)
+                .map(|(fs, _)| fs)
+                .map_err(|e| format!("Failed to create S3 filesystem: {e}"))
         }
-        _ => Err(format!("Unsupported protocol: {protocol}://")),
+        // Any other protocol registered in the process, such as one from another extension
+        // sharing libfsspec.
+        _ => url_to_fs(path, &FsOptions::new())
+            .map(|(fs, _)| fs)
+            .map_err(|e| format!("Unsupported protocol: {protocol}:// ({e})")),
     }
 }
 
