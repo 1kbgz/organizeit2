@@ -1,7 +1,8 @@
 [build-system]
 requires = [
     "hatchling",
-    "hatch-rs>=0.1.4",
+    "hatch-rs>=0.6.0",
+    "fsspec-rs>=0.2.1,<0.3",
 ]
 build-backend = "hatchling.build"
 
@@ -14,7 +15,7 @@ description = "Engage with Zorp!"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 version = "0.7.2"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 keywords = [
     "pydantic",
     "filesystem",
@@ -33,7 +34,9 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 
-dependencies = []
+dependencies = [
+    "fsspec-rs>=0.2.1,<0.3",
+]
 
 [project.optional-dependencies]
 cli = [
@@ -59,7 +62,6 @@ develop = [
     "uv",
     "wheel",
     # backends
-    "fsspec-rs",
     "s3fs",
     # cli
     "rich",
@@ -105,7 +107,7 @@ search = 'version = "{current_version}"'
 replace = 'version = "{new_version}"'
 
 [tool.cibuildwheel]
-build = "cp310-*"
+build = "cp311-*"
 test-command = "python -c \"import organizeit2\""
 
 [tool.cibuildwheel.linux]
@@ -118,14 +120,18 @@ rustup show
 before-build = "cargo clean --manifest-path {package}/Cargo.toml && rm -f {package}/organizeit2/*.so"
 environment = {PATH="$HOME/.cargo/bin:$PATH", CARGO_TERM_COLOR="always"}
 skip = "*i686* *musllinux*"
+# libfsspec comes from the fsspec_rs package the extension's rpath points at.
+repair-wheel-command = "auditwheel repair --exclude 'libfsspec.so*' -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.macos]
 environment = {PATH="$HOME/.cargo/bin:$PATH", CARGO_TERM_COLOR="always", MACOS_DEPLOYMENT_TARGET=11.0}
 archs = "arm64"
+repair-wheel-command = "bash {project}/scripts/repair-macos-wheel.sh {delocate_archs} {dest_dir} {wheel}"
 
 [tool.cibuildwheel.windows]
 environment = {PATH="$UserProfile\\.cargo\bin;$PATH", CARGO_TERM_COLOR="always"}
 skip = "*win32 *arm64"
+repair-wheel-command = "delvewheel repair --exclude fsspec.dll -w {dest_dir} {wheel}"
 
 
 [tool.coverage.run]
@@ -151,6 +157,23 @@ verbose = true
 abi3 = true
 module = "organizeit2"
 path = "."
+
+# libfsspec from the installed fsspec_rs package; organizeit2 opens URLs through it.
+[[tool.hatch.build.hooks.hatch-rs.artifacts]]
+name = "fsspec"
+python-package = "fsspec_rs"
+
+[[tool.hatch.build.hooks.hatch-rs.artifacts]]
+name = "organizeit2"
+manifest = "Cargo.toml"
+destination = "organizeit2/{python_extension_name}"
+links = ["fsspec"]
+
+[tool.hatch.build.hooks.hatch-rs.artifacts.library-source-features]
+bundled = ["capi"]
+external = ["capi"]
+static = ["direct"]
+direct = ["direct"]
 
 [tool.hatch.build.targets.sdist]
 packages = [

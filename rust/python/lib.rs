@@ -4,6 +4,7 @@ pub mod directory;
 pub mod file;
 pub mod fsspec_adapter;
 pub mod organizeit;
+mod registry;
 
 pub use directory::Directory;
 pub use file::File;
@@ -41,6 +42,8 @@ fn resolve_path(py: Python, path: String) -> PyResult<Py<PyAny>> {
 
 #[pymodule]
 fn organizeit2(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
+    registry::install();
+    m.add_function(wrap_pyfunction!(registry::linked_to_libfsspec, m)?)?;
     m.add_class::<Directory>()?;
     m.add_class::<File>()?;
     m.add_class::<OrganizeIt>()?;
